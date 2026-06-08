@@ -784,7 +784,7 @@ async function callAI(type, question = '') {
     const res = await fetch('/api/ai_analysis', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, year, month, loc, fuel, hq, question })
+      body: JSON.stringify({ type, year, month, loc, fuel, hq, mode: document.getElementById('sel-mode').value, question })
     });
     const data = await res.json();
     loading(false);

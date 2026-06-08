@@ -1722,40 +1722,47 @@ def ai_analysis():
     month    = data.get('month')
     loc      = data.get('loc', '충북 전체')
     fuel     = data.get('fuel', '')
+    hq       = data.get('hq', '')
+    mode     = data.get('mode', 'sigungu')
     question = data.get('question', '')
+
+    # 모드에 따라 테이블/컬럼 결정
+    tbl     = 'agg_base' if mode == 'base' else 'agg_sigungu'
+    loc_col = 'base'     if mode == 'base' else 'sigungu'
 
     # DB에서 실제 데이터 수집
     try:
-        # 기본 집계
         where_parts = ['year=?', 'month=?']
         params = [year, month]
-        if loc and loc != '충북 전체':
-            where_parts.append('sigungu=?')
+        if hq and hq not in ('', '전체'):
+            where_parts.append('headquarters=?')
+            params.append(hq)
+        if loc and loc not in ('충북 전체', '전체', ''):
+            where_parts.append(f'{loc_col}=?')
             params.append(loc)
         where = 'WHERE ' + ' AND '.join(where_parts)
 
         total_row = query_db(
-            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM agg_sigungu {where}', params)
+            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM {tbl} {where}', params)
         total = total_row[0]['v'] if total_row else 0
 
         maker_rows = query_db(
-            f'SELECT maker, SUM(reg_count) AS cnt FROM agg_sigungu {where} '
+            f'SELECT maker, SUM(reg_count) AS cnt FROM {tbl} {where} '
             f'GROUP BY maker ORDER BY cnt DESC LIMIT 10', params)
 
         py_params = [year-1, month] + params[2:]
+        py_where = 'WHERE year=? AND month=?' + (
+            f' AND headquarters=?' if hq and hq not in ('','전체') else '') + (
+            f' AND {loc_col}=?' if loc and loc not in ('충북 전체','전체','') else '')
         py_row = query_db(
-            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM agg_sigungu '
-            f'WHERE year=? AND month=?' + (f' AND sigungu=?' if loc and loc != '충북 전체' else ''),
-            py_params)
+            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM {tbl} {py_where}', py_params)
         total_py = py_row[0]['v'] if py_row else 0
 
         pm_y = year if month > 1 else year - 1
         pm_m = month - 1 if month > 1 else 12
         pm_params = [pm_y, pm_m] + params[2:]
         pm_row = query_db(
-            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM agg_sigungu '
-            f'WHERE year=? AND month=?' + (f' AND sigungu=?' if loc and loc != '충북 전체' else ''),
-            pm_params)
+            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM {tbl} {py_where}', pm_params)
         total_pm = pm_row[0]['v'] if pm_row else 0
 
         # 시군구별 현황
