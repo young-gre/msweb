@@ -183,18 +183,21 @@ def init_db():
             base TEXT, year INTEGER, month INTEGER, reg_count INTEGER)''')
 
         existing = [r[1] for r in con.execute('PRAGMA table_info(car_reg)').fetchall()]
-        for col in ['dong','base','headquarters']:
+        for col in ['dong','base','headquarters','region']:
             if col not in existing:
                 con.execute(f'ALTER TABLE car_reg ADD COLUMN {col} TEXT DEFAULT ""')
 
+        # ✅ car_reg_base에 region, sigungu, dong 컬럼 추가
         con.execute('''CREATE TABLE IF NOT EXISTS car_reg_base (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            headquarters TEXT, base TEXT, car_class TEXT, import_country TEXT,
+            headquarters TEXT, base TEXT, region TEXT, sigungu TEXT, dong TEXT,
+            car_class TEXT, import_country TEXT,
             maker TEXT, fuel TEXT, model TEXT, year INTEGER, month INTEGER, reg_count INTEGER)''')
 
         existing_base = [r[1] for r in con.execute('PRAGMA table_info(car_reg_base)').fetchall()]
-        if 'headquarters' not in existing_base:
-            con.execute('ALTER TABLE car_reg_base ADD COLUMN headquarters TEXT DEFAULT ""')
+        for col in ['headquarters','base','region','sigungu','dong']:
+            if col not in existing_base:
+                con.execute(f'ALTER TABLE car_reg_base ADD COLUMN {col} TEXT DEFAULT ""')
 
         con.execute('''CREATE TABLE IF NOT EXISTS national_reg (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -462,67 +465,7 @@ def record_upload_meta(mode, years, months):
     con.commit()
 
 
-def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
-    df = pd.read_excel(filepath, header=0)
-    df.columns = df.columns.astype(str).str.strip()
-
-    date_cols = [c for c in df.columns if re.match(r'^\d{4}\.\d{2}$', str(c).strip())]
-    id_cols   = [c for c in df.columns if c not in date_cols]
-    if not date_cols:
-        raise ValueError("날짜 형식 컬럼(YYYY.MM)을 찾을 수 없습니다.")
-
-    if filter_year and filter_month:
-        target = f"{filter_year}.{int(filter_month):02d}"
-        if target not in date_cols:
-            raise ValueError(f"{target} 컬럼이 없습니다.")
-        date_cols = [target]
-
-    long_df = df.melt(id_vars=id_cols, value_vars=date_cols,
-                      var_name='yearmonth', value_name='reg_count')
-    long_df = long_df[long_df['reg_count'].notna() & (long_df['reg_count'] > 0)].copy()
-    long_df['reg_count'] = long_df['reg_count'].astype(int)
-    long_df['year']  = long_df['yearmonth'].str[:4].astype(int)
-    long_df['month'] = long_df['yearmonth'].str[5:7].astype(int)
-    long_df.drop(columns=['yearmonth'], inplace=True)
-
-    COL_MAP = {
-        '지역본부':'headquarters','거점':'base','지역':'region',
-        '시군구':'sigungu','법정동':'dong','등록차급':'car_class',
-        '수입국가':'import_country','제조사':'maker','등록연료':'fuel','대표차명':'model',
-    }
-    long_df.rename(columns=COL_MAP, inplace=True)
-
-    for col in ['headquarters','base','region','sigungu','dong',
-                'car_class','import_country','maker','fuel','model']:
-        long_df[col] = long_df.get(col, pd.Series([''] * len(long_df))) \
-                               .fillna('').astype(str).str.strip()
-
-    long_df = long_df[long_df['maker'] != '']
-    years   = long_df['year'].unique().tolist()
-    months  = long_df['month'].unique().tolist()
-    ym_list = [(int(y), int(m)) for y in years for m in months]
-
-    sg_df   = long_df[long_df['sigungu'] != ''].copy()
-    base_df = long_df[long_df['base']    != ''].copy()
-
-    con = sqlite3.connect(DB_PATH)
-    try:
-        for y, m in ym_list:
-            con.execute('DELETE FROM car_reg      WHERE year=? AND month=?', (y,m))
-            con.execute('DELETE FROM car_reg_base WHERE year=? AND month=?', (y,m))
-        con.commit()
-        sg_df.to_sql('car_reg',      con, if_exists='append', index=False)
-        base_df.to_sql('car_reg_base', con, if_exists='append', index=False)
-        con.commit()
-    finally:
-        con.close()
-
-    record_upload_meta('sigungu', years, months)
-    record_upload_meta('base',    years, months)
-    threading.Thread(target=build_all_agg, args=(ym_list,), daemon=True).start()
-    return len(sg_df), len(base_df)
-
-
+# ✅ 중복 제거 - 최신 버전 단일 함수
 def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
     df = pd.read_excel(filepath, header=0, engine='openpyxl')
     df.columns = df.columns.astype(str).str.strip()
@@ -546,11 +489,6 @@ def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
     long_df['year']  = long_df['yearmonth'].str[:4].astype(int)
     long_df['month'] = long_df['yearmonth'].str[5:7].astype(int)
     long_df.drop(columns=['yearmonth'], inplace=True)
-    # DB 컬럼 외 불필요한 컬럼 제거
-    keep_cols = ['headquarters','base','region','sigungu','dong',
-                 'car_class','import_country','maker','fuel','model',
-                 'year','month','reg_count']
-    long_df = long_df[[c for c in keep_cols if c in long_df.columns]]
 
     COL_MAP = {
         '지역본부':'headquarters','거점':'base','지역':'region',
@@ -559,10 +497,18 @@ def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
     }
     long_df.rename(columns=COL_MAP, inplace=True)
 
+    # ✅ DB 컬럼 외 불필요한 컬럼 제거
+    keep_cols = ['headquarters','base','region','sigungu','dong',
+                 'car_class','import_country','maker','fuel','model',
+                 'year','month','reg_count']
+    long_df = long_df[[c for c in keep_cols if c in long_df.columns]]
+
     for col in ['headquarters','base','region','sigungu','dong',
                 'car_class','import_country','maker','fuel','model']:
-        long_df[col] = long_df.get(col, pd.Series([''] * len(long_df))) \
-                               .fillna('').astype(str).str.strip()
+        if col in long_df.columns:
+            long_df[col] = long_df[col].fillna('').astype(str).str.strip()
+        else:
+            long_df[col] = ''
 
     long_df = long_df[long_df['maker'] != '']
     years   = long_df['year'].unique().tolist()
@@ -593,6 +539,67 @@ def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
     record_upload_meta('base',    years, months)
     threading.Thread(target=build_all_agg, args=(ym_list,), daemon=True).start()
     return len(sg_df), len(base_df)
+
+
+def parse_and_insert_national(filepath, filter_year=None, filter_month=None):
+    df = pd.read_excel(filepath, header=0, engine='openpyxl')
+    df.columns = df.columns.astype(str).str.strip()
+
+    date_cols = [c for c in df.columns if re.match(r'^\d{4}\.\d{2}$', str(c).strip())]
+    id_cols   = [c for c in df.columns if c not in date_cols]
+    if not date_cols:
+        raise ValueError("날짜 형식 컬럼(YYYY.MM)을 찾을 수 없습니다.")
+
+    if filter_year and filter_month:
+        target = f"{filter_year}.{int(filter_month):02d}"
+        if target not in date_cols:
+            raise ValueError(f"{target} 컬럼이 없습니다.")
+        date_cols = [target]
+
+    long_df = df.melt(id_vars=id_cols, value_vars=date_cols,
+                      var_name='yearmonth', value_name='reg_count')
+    del df
+    long_df = long_df[long_df['reg_count'].notna() & (long_df['reg_count'] > 0)].copy()
+    long_df['reg_count'] = long_df['reg_count'].astype(int)
+    long_df['year']  = long_df['yearmonth'].str[:4].astype(int)
+    long_df['month'] = long_df['yearmonth'].str[5:7].astype(int)
+    long_df.drop(columns=['yearmonth'], inplace=True)
+
+    COL_MAP = {
+        '등록차급':'car_class','수입국가':'import_country',
+        '제조사':'maker','등록연료':'fuel','대표차명':'model',
+    }
+    long_df.rename(columns=COL_MAP, inplace=True)
+
+    keep_cols = ['car_class','import_country','maker','fuel','model','year','month','reg_count']
+    long_df = long_df[[c for c in keep_cols if c in long_df.columns]]
+
+    for col in ['car_class','import_country','maker','fuel','model']:
+        if col in long_df.columns:
+            long_df[col] = long_df[col].fillna('').astype(str).str.strip()
+        else:
+            long_df[col] = ''
+
+    long_df = long_df[long_df['maker'] != '']
+    years   = long_df['year'].unique().tolist()
+    months  = long_df['month'].unique().tolist()
+    ym_list = [(int(y), int(m)) for y in years for m in months]
+
+    con = sqlite3.connect(DB_PATH)
+    try:
+        for y, m in ym_list:
+            con.execute('DELETE FROM national_reg WHERE year=? AND month=?', (y,m))
+        con.commit()
+        chunk = 5000
+        for i in range(0, len(long_df), chunk):
+            long_df.iloc[i:i+chunk].to_sql('national_reg', con, if_exists='append', index=False)
+            con.commit()
+    finally:
+        con.close()
+
+    record_upload_meta('national', years, months)
+    threading.Thread(target=build_all_agg, args=(ym_list,), daemon=True).start()
+    return len(long_df)
 
 # ═══════════════════════════════════════════════════════
 # WHERE 빌더
@@ -774,7 +781,6 @@ def fetch_for_excel(year, month, loc, mode='sigungu', accum=False,
         cc   = r['car_class']
         fuel = r['fuel']
         is_ev = ('전기' in fuel and '수소' not in fuel and '하이브리드' not in fuel)
-        # ✅ is_ev를 key에 포함 → EV/비EV 동일 모델 분리
         key = (r['model'], r['maker'], r['import_country'], is_ev)
         d.setdefault(cc, {})
         if key not in d[cc]:
@@ -791,7 +797,6 @@ def sum_by_maker(data_dict, orig_classes):
     for cc, models in data_dict.items():
         if orig_classes is not None and cc not in orig_classes: continue
         if not CAR_CLASS_GROUP.get(cc): continue
-        # ✅ key = (model, maker, import_country, is_ev)
         for (mo, mk, ic, is_ev), val in models.items():
             cnt = val['cnt']
             col = get_maker_col(mk, ic)
@@ -898,7 +903,6 @@ def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, 
                 for c in range(c1,c2+1):
                     ws.cell(row=r,column=c).border = BD
 
-        # 헤더
         merge(1,1,3,1,'브랜드', FILL['header'],FONTA['header'])
         merge(1,2,3,2,'차종',   FILL['header'],FONTA['header'])
         for mi, mk in enumerate(ALL_MC):
@@ -950,7 +954,6 @@ def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, 
                 ic2.font = FONTA['up'] if iv>0 else FONTA['down']
             ws.row_dimensions[rn].height = 16
 
-        # 본문
         rn = 4
         gp2={mk:0 for mk in ALL_MC}; gc2={mk:0 for mk in ALL_MC}
         gp2_ev={mk:0 for mk in ALL_MC}; gc2_ev={mk:0 for mk in ALL_MC}
@@ -980,13 +983,13 @@ def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, 
                     all_keys |= set(curr_d.get(occ,{}).keys())
 
                 def brand_sort_key(k):
-                    mo, mk, ic, is_ev = k  # ✅ is_ev 추가
+                    mo, mk, ic, is_ev = k
                     brand = get_brand_label(mk, ic)
                     prefix = ('0' if brand=='현대' else '1' if brand=='기아' else '2_'+brand)
                     cnt = sum(curr_d.get(o,{}).get(k,{}).get('cnt',0) for o in orig_cls)
                     return (prefix, -cnt)
 
-                for (mo, mk, ic, is_ev) in sorted(all_keys, key=brand_sort_key):  # ✅
+                for (mo, mk, ic, is_ev) in sorted(all_keys, key=brand_sort_key):
                     pc3 = sum(prev_d.get(o,{}).get((mo,mk,ic,is_ev),{}).get('cnt',0) for o in orig_cls)
                     cc4 = sum(curr_d.get(o,{}).get((mo,mk,ic,is_ev),{}).get('cnt',0) for o in orig_cls)
                     if pc3==0 and cc4==0: continue
@@ -1010,7 +1013,6 @@ def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, 
         write_row(rn,'전  차  종','',gp2,gc2,gpt,gct,FILL['total'],FONTA['total'],C,C)
         rn += 1
 
-        # EV 행
         gpt_ev = sum(gp2_ev.values())
         gct_ev = sum(gc2_ev.values())
         sc(rn,1,'전기차(EV)',FILL['ev'],FONTA['ev'],C)
@@ -1102,6 +1104,8 @@ def upload():
         import traceback
         traceback.print_exc()
         return jsonify({'ok':False,'msg':str(e)}), 500
+    finally:
+        if os.path.exists(save_path): os.remove(save_path)
 
 
 @app.route('/api/agg_status')
