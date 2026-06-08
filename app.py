@@ -546,6 +546,11 @@ def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
     long_df['year']  = long_df['yearmonth'].str[:4].astype(int)
     long_df['month'] = long_df['yearmonth'].str[5:7].astype(int)
     long_df.drop(columns=['yearmonth'], inplace=True)
+    # DB 컬럼 외 불필요한 컬럼 제거
+    keep_cols = ['headquarters','base','region','sigungu','dong',
+                 'car_class','import_country','maker','fuel','model',
+                 'year','month','reg_count']
+    long_df = long_df[[c for c in keep_cols if c in long_df.columns]]
 
     COL_MAP = {
         '지역본부':'headquarters','거점':'base','지역':'region',
