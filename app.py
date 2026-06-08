@@ -1052,6 +1052,9 @@ def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, 
 @app.route('/')
 def index(): return render_template('index.html')
 
+@app.route('/analysis')
+def analysis(): return render_template('analysis.html')
+
 @app.route('/upload/login', methods=['GET','POST'])
 def upload_login():
     error = ''
