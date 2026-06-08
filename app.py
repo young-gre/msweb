@@ -14,7 +14,7 @@ from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 app = Flask(__name__)
-app.secret_key = secrets.token_hex(32)
+app.secret_key = 'msweb-secret-key-chungbuk-2026'
 
 BASE_DIR        = os.path.dirname(__file__)
 DB_PATH         = os.path.join(BASE_DIR, 'ms_data.db')
@@ -1071,7 +1071,7 @@ def upload():
     upload_type  = request.form.get('type','unified')
     filter_year  = request.form.get('year','').strip()
     filter_month = request.form.get('month','').strip()
-    save_path    = os.path.join(BASE_DIR, 'uploaded_temp.xlsx')
+    save_path = '/tmp/uploaded_temp.xlsx'
     f.save(save_path)
     try:
         fy    = int(filter_year)  if filter_year  else None
