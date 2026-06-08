@@ -523,8 +523,8 @@ def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
     return len(sg_df), len(base_df)
 
 
-def parse_and_insert_national(filepath, filter_year=None, filter_month=None):
-    df = pd.read_excel(filepath, header=0)
+def parse_and_insert_unified(filepath, filter_year=None, filter_month=None):
+    df = pd.read_excel(filepath, header=0, engine='openpyxl')
     df.columns = df.columns.astype(str).str.strip()
 
     date_cols = [c for c in df.columns if re.match(r'^\d{4}\.\d{2}$', str(c).strip())]
@@ -538,23 +538,24 @@ def parse_and_insert_national(filepath, filter_year=None, filter_month=None):
             raise ValueError(f"{target} 컬럼이 없습니다.")
         date_cols = [target]
 
-    for col in date_cols:
-        df[col] = pd.to_numeric(df[col].astype(str).str.replace(',',''), errors='coerce')
-
     long_df = df.melt(id_vars=id_cols, value_vars=date_cols,
                       var_name='yearmonth', value_name='reg_count')
+    del df
     long_df = long_df[long_df['reg_count'].notna() & (long_df['reg_count'] > 0)].copy()
     long_df['reg_count'] = long_df['reg_count'].astype(int)
     long_df['year']  = long_df['yearmonth'].str[:4].astype(int)
     long_df['month'] = long_df['yearmonth'].str[5:7].astype(int)
     long_df.drop(columns=['yearmonth'], inplace=True)
 
-    COL_NAT = {
-        '등록차급':'car_class','수입국가':'import_country',
-        '제조사':'maker','등록연료':'fuel','대표차명':'model',
+    COL_MAP = {
+        '지역본부':'headquarters','거점':'base','지역':'region',
+        '시군구':'sigungu','법정동':'dong','등록차급':'car_class',
+        '수입국가':'import_country','제조사':'maker','등록연료':'fuel','대표차명':'model',
     }
-    long_df.rename(columns=COL_NAT, inplace=True)
-    for col in ['car_class','import_country','maker','fuel','model']:
+    long_df.rename(columns=COL_MAP, inplace=True)
+
+    for col in ['headquarters','base','region','sigungu','dong',
+                'car_class','import_country','maker','fuel','model']:
         long_df[col] = long_df.get(col, pd.Series([''] * len(long_df))) \
                                .fillna('').astype(str).str.strip()
 
@@ -563,22 +564,30 @@ def parse_and_insert_national(filepath, filter_year=None, filter_month=None):
     months  = long_df['month'].unique().tolist()
     ym_list = [(int(y), int(m)) for y in years for m in months]
 
-    keep = ['car_class','import_country','maker','fuel','model','year','month','reg_count']
-    long_df = long_df[[c for c in keep if c in long_df.columns]]
+    sg_df   = long_df[long_df['sigungu'] != ''].copy()
+    base_df = long_df[long_df['base']    != ''].copy()
+    del long_df
 
     con = sqlite3.connect(DB_PATH)
     try:
         for y, m in ym_list:
-            con.execute('DELETE FROM national_reg WHERE year=? AND month=?', (y,m))
+            con.execute('DELETE FROM car_reg      WHERE year=? AND month=?', (y,m))
+            con.execute('DELETE FROM car_reg_base WHERE year=? AND month=?', (y,m))
         con.commit()
-        long_df.to_sql('national_reg', con, if_exists='append', index=False)
-        con.commit()
+        chunk = 5000
+        for i in range(0, len(sg_df), chunk):
+            sg_df.iloc[i:i+chunk].to_sql('car_reg', con, if_exists='append', index=False)
+            con.commit()
+        for i in range(0, len(base_df), chunk):
+            base_df.iloc[i:i+chunk].to_sql('car_reg_base', con, if_exists='append', index=False)
+            con.commit()
     finally:
         con.close()
 
-    record_upload_meta('national', years, months)
+    record_upload_meta('sigungu', years, months)
+    record_upload_meta('base',    years, months)
     threading.Thread(target=build_all_agg, args=(ym_list,), daemon=True).start()
-    return len(long_df)
+    return len(sg_df), len(base_df)
 
 # ═══════════════════════════════════════════════════════
 # WHERE 빌더
