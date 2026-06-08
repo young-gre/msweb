@@ -897,7 +897,7 @@ async function genReport() {
   try {
     const res = await fetch('/api/ai_analysis', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({type:'summary', year:f.year, month:f.month, loc:'충북 전체', fuel:'', hq:f.hq, mode:f.mode, question:'임원 보고용 월간 리포트 형식으로 작성해줘. ① 핵심 요약 ② M/S 현황 ③ 지역별 특이사항 ④ EV 동향 ⑤ 전략 권고 순서로.'})
+      body: JSON.stringify({type:'summary', year:f.year, month:f.month, loc:f.loc||'충북 전체', fuel:f.fuel, hq:f.hq, mode:f.mode, accum:f.accum, question:'임원 보고용 월간 리포트 형식으로 작성해줘. 분석 대상은 선택된 지역/거점이야. ① 핵심 요약 ② M/S 현황 ③ 지역별 특이사항 ④ EV 동향 ⑤ 전략 권고 순서로 완성도 있게 작성해줘.'})
     });
     const data = await res.json();
     loading(false);
