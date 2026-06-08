@@ -1713,6 +1713,118 @@ def maker_fuel():
 
     return jsonify([{'group':k,'total':v,'share':round(v/grand*100,1)} for k,v in groups.items()])
 
+@app.route('/api/ai_analysis', methods=['POST'])
+def ai_analysis():
+    import anthropic
+    data = request.json or {}
+    ai_type  = data.get('type', 'crisis')
+    year     = data.get('year')
+    month    = data.get('month')
+    loc      = data.get('loc', '충북 전체')
+    fuel     = data.get('fuel', '')
+    question = data.get('question', '')
+
+    # DB에서 실제 데이터 수집
+    try:
+        # 기본 집계
+        where_parts = ['year=?', 'month=?']
+        params = [year, month]
+        if loc and loc != '충북 전체':
+            where_parts.append('sigungu=?')
+            params.append(loc)
+        where = 'WHERE ' + ' AND '.join(where_parts)
+
+        total_row = query_db(
+            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM agg_sigungu {where}', params)
+        total = total_row[0]['v'] if total_row else 0
+
+        maker_rows = query_db(
+            f'SELECT maker, SUM(reg_count) AS cnt FROM agg_sigungu {where} '
+            f'GROUP BY maker ORDER BY cnt DESC LIMIT 10', params)
+
+        py_params = [year-1, month] + params[2:]
+        py_row = query_db(
+            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM agg_sigungu '
+            f'WHERE year=? AND month=?' + (f' AND sigungu=?' if loc and loc != '충북 전체' else ''),
+            py_params)
+        total_py = py_row[0]['v'] if py_row else 0
+
+        pm_y = year if month > 1 else year - 1
+        pm_m = month - 1 if month > 1 else 12
+        pm_params = [pm_y, pm_m] + params[2:]
+        pm_row = query_db(
+            f'SELECT COALESCE(SUM(reg_count),0) AS v FROM agg_sigungu '
+            f'WHERE year=? AND month=?' + (f' AND sigungu=?' if loc and loc != '충북 전체' else ''),
+            pm_params)
+        total_pm = pm_row[0]['v'] if pm_row else 0
+
+        # 시군구별 현황
+        sg_rows = query_db(
+            f'SELECT sigungu, SUM(reg_count) AS cnt FROM agg_sigungu '
+            f'WHERE year=? AND month=? GROUP BY sigungu ORDER BY cnt DESC LIMIT 10',
+            [year, month])
+
+        # 데이터 요약 텍스트 생성
+        grand = total or 1
+        maker_summary = '\n'.join([
+            f"  {r['maker']}: {r['cnt']}대 ({round(r['cnt']/grand*100,1)}%)"
+            for r in maker_rows
+        ])
+        sg_summary = '\n'.join([
+            f"  {r['sigungu']}: {r['cnt']}대"
+            for r in sg_rows[:7]
+        ])
+        yoy = round((total - total_py) / total_py * 100, 1) if total_py else 0
+        mom = round((total - total_pm) / total_pm * 100, 1) if total_pm else 0
+
+        data_context = f"""
+[분석 대상]
+- 기간: {year}년 {month}월 / 지역: {loc}
+- 총 등록: {total:,}대 (전년동월비 {yoy:+.1f}%, 전월비 {mom:+.1f}%)
+
+[제조사별 점유율]
+{maker_summary}
+
+[시군구별 등록 현황 (상위)]
+{sg_summary}
+"""
+    except Exception as e:
+        data_context = f"[데이터 조회 오류: {str(e)}]"
+
+    # 분석 유형별 프롬프트
+    type_prompts = {
+        'crisis':     '위기/기회 감지 분석을 해줘. M/S 급변 지역과 즉각 대응이 필요한 상황을 중심으로.',
+        'competitor': '경쟁사 추격 분석을 해줘. 기아, 테슬라, BYD의 침투 패턴과 현대차 대응 방안 중심으로.',
+        'ev':         'EV 전환 현황 분석을 해줘. 전기차 침투율과 현대 EV 점유율 변화 중심으로.',
+        'base':       '거점 성과 분석을 해줘. 성과가 좋은 거점과 부진한 거점의 특징 중심으로.',
+        'strategy':   '전략 제언을 해줘. 데이터 기반으로 즉시 실행 가능한 액션 아이템 3~5가지.',
+        'summary':    '전체 시장 현황을 종합 요약해줘. 핵심 수치와 주요 트렌드 중심으로.',
+    }
+
+    analysis_prompt = type_prompts.get(ai_type, type_prompts['summary'])
+    if question:
+        analysis_prompt = f"추가 질문: {question}"
+
+    system_prompt = """당신은 현대자동차 충북지역본부 전담 데이터 분석가입니다.
+제공된 자동차 등록 데이터를 바탕으로 영업 전략적 인사이트를 제공합니다.
+답변은 간결하고 실무적으로, 3~5개 단락으로 작성하세요.
+수치는 반드시 데이터에 근거하고, 구체적인 지역명과 제조사명을 명시하세요.
+마크다운 없이 일반 텍스트로만 답변하세요."""
+
+    user_prompt = f"{data_context}\n\n{analysis_prompt}"
+
+    try:
+        client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
+        message = client.messages.create(
+            model='claude-sonnet-4-5',
+            max_tokens=1024,
+            system=system_prompt,
+            messages=[{'role': 'user', 'content': user_prompt}]
+        )
+        result = message.content[0].text
+        return jsonify({'ok': True, 'result': result})
+    except Exception as e:
+        return jsonify({'ok': False, 'msg': str(e)}), 500
 
 @app.after_request
 def no_cache(response):

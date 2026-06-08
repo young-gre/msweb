@@ -964,12 +964,14 @@ function loading(show) {
 }
 
 function runAI() {
-  loading(true);
-  setTimeout(() => {
-    loading(false);
-    document.getElementById('ai-label').textContent = 'claude-sonnet — ' + aiType + ' 분석 완료';
-    document.getElementById('ai-time').textContent = '방금 전';
-  }, 2000);
+  callAI(aiType);
+}
+
+function askAI() {
+  const q = document.getElementById('ai-q').value.trim();
+  if (!q) return;
+  callAI(aiType, q);
+  document.getElementById('ai-q').value = '';
 }
 
 function askAI() {
@@ -1126,6 +1128,44 @@ function initCompetitor() {
     }
   });
 }
+
+async function callAI(type, question = '') {
+  const year  = parseInt(document.getElementById('sel-year').value);
+  const month = parseInt(document.getElementById('sel-month').value);
+  const loc   = document.getElementById('sel-loc').value || '충북 전체';
+  const fuel  = document.getElementById('sel-fuel').value;
+
+  loading(true);
+
+  try {
+    const res = await fetch('/api/ai_analysis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, year, month, loc, fuel, question })
+    });
+    const data = await res.json();
+    loading(false);
+
+    if (!data.ok) {
+      alert('분석 오류: ' + data.msg);
+      return;
+    }
+
+    // 결과 표시
+    document.getElementById('ai-label').textContent =
+      'claude-sonnet — ' + type + ' 분석 완료';
+    document.getElementById('ai-time').textContent = '방금 전';
+
+    const body = document.getElementById('ai-result-body');
+    body.querySelector('.ai-text').innerHTML =
+      data.result.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+
+  } catch (e) {
+    loading(false);
+    alert('네트워크 오류: ' + e.message);
+  }
+}
+
 </script>
 </body>
 </html>
