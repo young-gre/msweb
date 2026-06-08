@@ -1769,11 +1769,32 @@ def ai_analysis():
             f'SELECT COALESCE(SUM(reg_count),0) AS v FROM {tbl} {py_where}', pm_params)
         total_pm = pm_row[0]['v'] if pm_row else 0
 
-        # 거점/시군구별 현황
+        # 거점/시군구별 현황 (전체)
         loc_rows = query_db(
             f'SELECT {loc_col}, SUM(reg_count) AS cnt FROM {tbl} '
-            f'WHERE year=? AND month=? GROUP BY {loc_col} ORDER BY cnt DESC LIMIT 10',
+            f'WHERE year=? AND month=? GROUP BY {loc_col} ORDER BY cnt DESC LIMIT 15',
             [year, month])
+
+        # 지역별 제조사 분리 데이터
+        loc_maker_rows = query_db(
+            f'SELECT {loc_col}, maker, SUM(reg_count) AS cnt FROM {tbl} '
+            f'WHERE year=? AND month=? GROUP BY {loc_col}, maker ORDER BY {loc_col}, cnt DESC',
+            [year, month])
+
+        # 전월 지역별 제조사 데이터
+        loc_maker_pm_rows = query_db(
+            f'SELECT {loc_col}, maker, SUM(reg_count) AS cnt FROM {tbl} '
+            f'WHERE year=? AND month=? GROUP BY {loc_col}, maker ORDER BY {loc_col}, cnt DESC',
+            [pm_y, pm_m])
+
+        # 지역별 제조사 맵 구성
+        from collections import defaultdict
+        loc_maker_map = defaultdict(dict)
+        for r in loc_maker_rows:
+            loc_maker_map[r[loc_col]][r['maker']] = r['cnt']
+        loc_maker_pm_map = defaultdict(dict)
+        for r in loc_maker_pm_rows:
+            loc_maker_pm_map[r[loc_col]][r['maker']] = r['cnt']
 
         # 데이터 요약 텍스트 생성
         grand = total or 1
@@ -1781,23 +1802,97 @@ def ai_analysis():
             f"  {r['maker']}: {r['cnt']}대 ({round(r['cnt']/grand*100,1)}%)"
             for r in maker_rows
         ])
-        sg_summary = '\n'.join([
-            f"  {r[loc_col]}: {r['cnt']}대"
-            for r in loc_rows[:7]
-        ])
         yoy = round((total - total_py) / total_py * 100, 1) if total_py else 0
         mom = round((total - total_pm) / total_pm * 100, 1) if total_pm else 0
 
+        # 지역별 제조사 분리 상세 텍스트
+        loc_detail_lines = []
+        for r in loc_rows[:12]:
+            loc = r[loc_col]
+            loc_total = r['cnt'] or 1
+            makers_in_loc = loc_maker_map.get(loc, {})
+            makers_pm_in_loc = loc_maker_pm_map.get(loc, {})
+            top_makers = sorted(makers_in_loc.items(), key=lambda x: -x[1])[:5]
+            maker_parts = []
+            for mk, cnt in top_makers:
+                ms = round(cnt/loc_total*100, 1)
+                cnt_pm = makers_pm_in_loc.get(mk, 0)
+                loc_total_pm = sum(makers_pm_in_loc.values()) or 1
+                ms_pm = round(cnt_pm/loc_total_pm*100, 1) if cnt_pm else 0
+                diff = round(ms - ms_pm, 1) if cnt_pm else 0
+                diff_str = f"({'+' if diff>0 else ''}{diff}%p)" if cnt_pm else ""
+                maker_parts.append(f"{mk} {cnt}대/{ms}%{diff_str}")
+            loc_detail_lines.append(f"  {loc}: 총{r['cnt']}대 | {' / '.join(maker_parts)}")
+
+        loc_detail = '\n'.join(loc_detail_lines)
+
+        # 차급별 현황
+        class_rows = query_db(
+            f'SELECT car_class, maker, SUM(reg_count) AS cnt FROM {tbl} '
+            f'WHERE year=? AND month=? GROUP BY car_class, maker ORDER BY car_class, cnt DESC',
+            [year, month])
+        from collections import defaultdict
+        class_maker_map = defaultdict(dict)
+        class_total_map = defaultdict(int)
+        for r in class_rows:
+            class_maker_map[r['car_class']][r['maker']] = r['cnt']
+            class_total_map[r['car_class']] += r['cnt']
+
+        class_lines = []
+        for cc, cc_total in sorted(class_total_map.items(), key=lambda x: -x[1]):
+            makers_in_cc = sorted(class_maker_map[cc].items(), key=lambda x: -x[1])[:4]
+            parts = [f"{mk} {cnt}대({round(cnt/cc_total*100,1)}%)" for mk,cnt in makers_in_cc]
+            class_lines.append(f"  {cc}: 총{cc_total}대 | {' / '.join(parts)}")
+        class_summary = '\n'.join(class_lines)
+
+        # 연료별 현황
+        fuel_rows = query_db(
+            f'SELECT fuel, maker, SUM(reg_count) AS cnt FROM {tbl} '
+            f'WHERE year=? AND month=? GROUP BY fuel, maker ORDER BY cnt DESC',
+            [year, month])
+        fuel_group_map = {'ICE': {}, 'HEV': {}, 'EV': {}, 'FCEV': {}}
+        fuel_total_map = {'ICE': 0, 'HEV': 0, 'EV': 0, 'FCEV': 0}
+        for r in fuel_rows:
+            f2 = r['fuel']
+            if '수소' in f2:
+                fg = 'FCEV'
+            elif '전기' in f2 and '하이브리드' not in f2:
+                fg = 'EV'
+            elif '하이브리드' in f2:
+                fg = 'HEV'
+            else:
+                fg = 'ICE'
+            fuel_group_map[fg][r['maker']] = fuel_group_map[fg].get(r['maker'], 0) + r['cnt']
+            fuel_total_map[fg] += r['cnt']
+
+        fuel_lines = []
+        for fg in ['ICE','HEV','EV','FCEV']:
+            fg_total = fuel_total_map[fg] or 1
+            share = round(fuel_total_map[fg]/grand*100,1)
+            top = sorted(fuel_group_map[fg].items(), key=lambda x: -x[1])[:4]
+            parts = [f"{mk} {cnt}대({round(cnt/fg_total*100,1)}%)" for mk,cnt in top]
+            fuel_lines.append(f"  {fg}: 총{fuel_total_map[fg]}대(시장{share}%) | {' / '.join(parts)}")
+        fuel_summary = '\n'.join(fuel_lines)
+
         data_context = f"""
 [분석 대상]
-- 기간: {year}년 {month}월 / 지역: {loc}
+- 기간: {year}년 {month}월 / 지역: {loc if loc and loc not in ('충북 전체','전체','') else '충북 전체'}
 - 총 등록: {total:,}대 (전년동월비 {yoy:+.1f}%, 전월비 {mom:+.1f}%)
 
-[제조사별 점유율]
+[제조사별 점유율 (전체)]
 {maker_summary}
 
-[시군구별 등록 현황 (상위)]
-{sg_summary}
+[연료별 등록 현황]
+(형식: 연료: 총대수(시장비중) | 제조사 대수(M/S))
+{fuel_summary}
+
+[차급별 제조사 등록 현황]
+(형식: 차급: 총대수 | 제조사 대수(M/S))
+{class_summary}
+
+[지역별 제조사 분리 등록 현황]
+(형식: 지역명: 총대수 | 제조사 대수/M/S(전월대비변화))
+{loc_detail}
 """
     except Exception as e:
         data_context = f"[데이터 조회 오류: {str(e)}]"
@@ -1881,7 +1976,7 @@ def ai_analysis():
         client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
         message = client.messages.create(
             model='claude-sonnet-4-6',
-            max_tokens=2048,
+            max_tokens=4096,
             system=system_prompt,
             messages=[{'role': 'user', 'content': user_prompt}]
         )
