@@ -1765,10 +1765,10 @@ def ai_analysis():
             f'SELECT COALESCE(SUM(reg_count),0) AS v FROM {tbl} {py_where}', pm_params)
         total_pm = pm_row[0]['v'] if pm_row else 0
 
-        # 시군구별 현황
-        sg_rows = query_db(
-            f'SELECT sigungu, SUM(reg_count) AS cnt FROM agg_sigungu '
-            f'WHERE year=? AND month=? GROUP BY sigungu ORDER BY cnt DESC LIMIT 10',
+        # 거점/시군구별 현황
+        loc_rows = query_db(
+            f'SELECT {loc_col}, SUM(reg_count) AS cnt FROM {tbl} '
+            f'WHERE year=? AND month=? GROUP BY {loc_col} ORDER BY cnt DESC LIMIT 10',
             [year, month])
 
         # 데이터 요약 텍스트 생성
@@ -1778,8 +1778,8 @@ def ai_analysis():
             for r in maker_rows
         ])
         sg_summary = '\n'.join([
-            f"  {r['sigungu']}: {r['cnt']}대"
-            for r in sg_rows[:7]
+            f"  {r[loc_col]}: {r['cnt']}대"
+            for r in loc_rows[:7]
         ])
         yoy = round((total - total_py) / total_py * 100, 1) if total_py else 0
         mom = round((total - total_pm) / total_pm * 100, 1) if total_pm else 0
