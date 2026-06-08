@@ -1841,7 +1841,7 @@ def ai_analysis():
     try:
         client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
         message = client.messages.create(
-            model='claude-haiku-4-5-20251001',
+            model='claude-sonnet-4-6',
             max_tokens=2048,
             system=system_prompt,
             messages=[{'role': 'user', 'content': user_prompt}]
