@@ -7,231 +7,104 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Malgun Gothic', '맑은 고딕', sans-serif;
-  background: #f4f6f9; color: #333; font-size: 13px; line-height: 1.5;
-}
-header {
-  background: #1e293b; padding: 0 32px;
-  display: flex; align-items: stretch; justify-content: space-between; height: 56px;
-}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Malgun Gothic', '맑은 고딕', sans-serif; background: #f4f6f9; color: #333; font-size: 13px; line-height: 1.5; }
+header { background: #1e293b; padding: 0 32px; display: flex; align-items: stretch; justify-content: space-between; height: 56px; }
 .header-left { display: flex; flex-direction: column; justify-content: center; }
 .header-org  { font-size: .7rem; color: #94a3b8; letter-spacing: .05em; margin-bottom: 2px; }
 .header-title { font-size: 1rem; color: #f8fafc; font-weight: 600; }
 .header-right { display: flex; align-items: center; gap: 8px; }
-.header-link {
-  color: #cbd5e1; font-size: .78rem; text-decoration: none;
-  padding: 6px 14px; border: 1px solid #475569; border-radius: 4px; transition: all .2s;
-}
+.header-link { color: #cbd5e1; font-size: .78rem; text-decoration: none; padding: 6px 14px; border: 1px solid #475569; border-radius: 4px; transition: all .2s; }
 .header-link:hover { background: #334155; color: #fff; }
 .layout { display: flex; min-height: calc(100vh - 56px); }
-.sidebar {
-  width: 200px; flex-shrink: 0;
-  background: #fff; border-right: 1px solid #e2e8f0;
-  padding: 16px 0;
-}
-.sidebar-section {
-  font-size: .68rem; font-weight: 700; color: #94a3b8;
-  letter-spacing: .08em; text-transform: uppercase;
-  padding: 0 16px; margin: 16px 0 6px;
-}
+.sidebar { width: 200px; flex-shrink: 0; background: #fff; border-right: 1px solid #e2e8f0; padding: 16px 0; }
+.sidebar-section { font-size: .68rem; font-weight: 700; color: #94a3b8; letter-spacing: .08em; text-transform: uppercase; padding: 0 16px; margin: 16px 0 6px; }
 .sidebar-section:first-child { margin-top: 0; }
 .sidebar-menu { list-style: none; }
-.sidebar-menu li a {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 7px 16px; color: #475569; text-decoration: none;
-  font-size: .8rem; cursor: pointer; transition: all .15s;
-}
+.sidebar-menu li a { display: flex; align-items: center; justify-content: space-between; padding: 7px 16px; color: #475569; text-decoration: none; font-size: .8rem; cursor: pointer; transition: all .15s; }
 .sidebar-menu li a:hover { background: #f8fafc; color: #0f172a; }
 .sidebar-menu li a.active { background: #eff6ff; color: #1d4ed8; font-weight: 600; border-right: 2px solid #3b82f6; }
-.sidebar-badge {
-  font-size: .65rem; font-weight: 700; padding: 1px 5px;
-  border-radius: 3px; background: #dbeafe; color: #1d4ed8;
-}
+.sidebar-badge { font-size: .65rem; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: #dbeafe; color: #1d4ed8; }
 .main { flex: 1; min-width: 0; }
-.subheader {
-  background: #fff; border-bottom: 1px solid #e2e8f0;
-  padding: 0 24px; height: 48px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-}
-.subheader-title {
-  font-size: .9rem; font-weight: 700; color: #0f172a; white-space: nowrap;
-}
+.subheader { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.subheader-title { font-size: .9rem; font-weight: 700; color: #0f172a; white-space: nowrap; }
 .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.filter-row select {
-  padding: 5px 24px 5px 10px; border: 1px solid #cbd5e1; border-radius: 4px;
-  font-size: .78rem; background: #fff; color: #334155;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 8px center;
-  font-family: inherit; outline: none; cursor: pointer;
-}
+.filter-row select { padding: 5px 24px 5px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: .78rem; background: #fff; color: #334155; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; font-family: inherit; outline: none; cursor: pointer; }
 .filter-row select:focus { border-color: #3b82f6; }
 .content { padding: 20px 24px; }
 .panel { display: none; }
 .panel.active { display: block; }
-.card {
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
-  padding: 16px 20px; margin-bottom: 16px;
-}
-.card-title {
-  font-size: .85rem; font-weight: 700; color: #1e293b;
-  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.metric-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;
-}
-.metric-card {
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
-  padding: 14px 16px; border-top: 3px solid #e2e8f0;
-}
-.metric-card.blue   { border-top-color: #3b82f6; }
-.metric-card.green  { border-top-color: #10b981; }
-.metric-card.red    { border-top-color: #ef4444; }
-.metric-card.amber  { border-top-color: #f59e0b; }
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+.card-title { font-size: .85rem; font-weight: 700; color: #1e293b; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+.metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.metric-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; border-top: 3px solid #e2e8f0; }
+.metric-card.blue { border-top-color: #3b82f6; } .metric-card.green { border-top-color: #10b981; } .metric-card.red { border-top-color: #ef4444; } .metric-card.amber { border-top-color: #f59e0b; }
 .metric-label { font-size: .72rem; color: #64748b; font-weight: 700; margin-bottom: 6px; }
 .metric-value { font-size: 1.4rem; font-weight: 700; color: #0f172a; line-height: 1.2; margin-bottom: 4px; }
 .metric-delta { font-size: .72rem; }
-.metric-delta.up   { color: #dc2626; }
-.metric-delta.down { color: #2563a8; }
-.metric-delta.flat { color: #94a3b8; }
+.metric-delta.up { color: #dc2626; } .metric-delta.down { color: #2563a8; } .metric-delta.flat { color: #94a3b8; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.chart-wrap { position: relative; height: 200px; }
-.chart-wrap.tall { height: 260px; }
+.chart-wrap { position: relative; height: 200px; } .chart-wrap.tall { height: 260px; }
 .tbl-wrap { overflow-x: auto; }
-.data-tbl {
-  width: 100%; border-collapse: collapse;
-  font-size: .78rem; font-variant-numeric: tabular-nums;
-}
-.data-tbl th {
-  background: #f8fafc; color: #475569; padding: 7px 10px;
-  text-align: center; border-bottom: 2px solid #e2e8f0;
-  font-size: .72rem; font-weight: 600; white-space: nowrap;
-}
+.data-tbl { width: 100%; border-collapse: collapse; font-size: .78rem; font-variant-numeric: tabular-nums; }
+.data-tbl th { background: #f8fafc; color: #475569; padding: 7px 10px; text-align: center; border-bottom: 2px solid #e2e8f0; font-size: .72rem; font-weight: 600; white-space: nowrap; }
 .data-tbl th.left { text-align: left; }
-.data-tbl td {
-  padding: 7px 10px; border-bottom: 1px solid #f1f5f9;
-  text-align: right; white-space: nowrap; color: #334155;
-}
+.data-tbl td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; text-align: right; white-space: nowrap; color: #334155; }
 .data-tbl td.left { text-align: left; font-weight: 600; color: #0f172a; }
 .data-tbl td.muted { color: #94a3b8; text-align: center; }
 .data-tbl tr:hover td { background: #f8fafc; }
 .data-tbl tr.total td { background: #f1f5f9; font-weight: 700; border-top: 1px solid #e2e8f0; }
-.up   { color: #dc2626; font-weight: 600; }
-.down { color: #2563a8; font-weight: 600; }
-.badge {
-  display: inline-block; font-size: .68rem; font-weight: 600;
-  padding: 2px 7px; border-radius: 3px; white-space: nowrap;
-}
+.up { color: #dc2626; font-weight: 600; } .down { color: #2563a8; font-weight: 600; }
+.badge { display: inline-block; font-size: .68rem; font-weight: 600; padding: 2px 7px; border-radius: 3px; white-space: nowrap; }
 .badge-red    { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 .badge-green  { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
 .badge-blue   { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
 .badge-amber  { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
 .badge-gray   { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
-.alert {
-  padding: 9px 14px; border-radius: 4px;
-  font-size: .78rem; margin-bottom: 12px;
-  display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
-}
-.alert-red    { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-.alert-amber  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-.alert-blue   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+.alert { padding: 9px 14px; border-radius: 4px; font-size: .78rem; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
+.alert-red  { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.alert-blue { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
 .anomaly-list { list-style: none; }
-.anomaly-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 9px 0; border-bottom: 1px solid #f1f5f9;
-}
+.anomaly-item { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid #f1f5f9; }
 .anomaly-item:last-child { border-bottom: none; }
 .anomaly-rank { font-size: .72rem; color: #94a3b8; width: 20px; text-align: center; font-weight: 700; }
 .anomaly-info { flex: 1; }
 .anomaly-loc  { font-size: .8rem; font-weight: 600; color: #0f172a; }
 .anomaly-desc { font-size: .72rem; color: #64748b; margin-top: 1px; }
-.trend-bar-wrap { height: 4px; background: #f1f5f9; border-radius: 2px; overflow: hidden; margin: 6px 0 3px; }
-.trend-bar      { height: 100%; border-radius: 2px; }
-.trend-bar.up   { background: #dc2626; }
-.trend-bar.down { background: #2563a8; }
 .ai-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-.ai-type-card {
-  border: 1px solid #e2e8f0; border-radius: 6px;
-  padding: 12px 14px; cursor: pointer; transition: all .15s; background: #fff;
-}
+.ai-type-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; cursor: pointer; transition: all .15s; background: #fff; }
 .ai-type-card:hover { border-color: #94a3b8; background: #f8fafc; }
 .ai-type-card.selected { border-color: #3b82f6; background: #eff6ff; }
 .ai-type-title { font-size: .8rem; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
 .ai-type-desc  { font-size: .72rem; color: #64748b; }
 .ai-type-card.selected .ai-type-title { color: #1d4ed8; }
-.ai-result-header {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; background: #f8fafc;
-  border: 1px solid #e2e8f0; border-radius: 6px 6px 0 0; border-bottom: none;
-}
+.ai-result-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px 6px 0 0; border-bottom: none; }
 .ai-result-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; flex-shrink: 0; }
 .ai-result-label { font-size: .75rem; color: #475569; font-weight: 600; }
 .ai-result-time  { font-size: .72rem; color: #94a3b8; margin-left: auto; }
-.ai-result-body {
-  border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px;
-  padding: 16px 20px; background: #fff;
-}
-.ai-highlight-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
-.ai-highlight {
-  background: #f8fafc; border: 1px solid #e2e8f0;
-  border-radius: 6px; padding: 10px 12px; text-align: center;
-}
-.ai-highlight-val   { font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
-.ai-highlight-label { font-size: .7rem; color: #64748b; }
+.ai-result-body { border: 1px solid #e2e8f0; border-radius: 0 0 6px 6px; padding: 16px 20px; background: #fff; }
 .ai-text { font-size: .82rem; color: #334155; line-height: 1.8; }
 .ai-text strong { color: #0f172a; font-weight: 600; }
-.ai-followup {
-  padding: 10px 14px; background: #f8fafc;
-  border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 6px 6px;
-}
+.ai-followup { padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 6px 6px; }
 .ai-followup-row { display: flex; gap: 8px; margin-bottom: 8px; }
-.ai-followup-row input {
-  flex: 1; padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 4px;
-  font-size: .78rem; font-family: inherit; outline: none; color: #334155;
-}
+.ai-followup-row input { flex: 1; padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: .78rem; font-family: inherit; outline: none; color: #334155; }
 .ai-followup-row input:focus { border-color: #3b82f6; }
 .ai-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.ai-chip {
-  padding: 3px 10px; border: 1px solid #e2e8f0; border-radius: 20px;
-  font-size: .72rem; color: #64748b; background: #fff; cursor: pointer; transition: all .15s;
-  font-family: inherit;
-}
+.ai-chip { padding: 3px 10px; border: 1px solid #e2e8f0; border-radius: 20px; font-size: .72rem; color: #64748b; background: #fff; cursor: pointer; transition: all .15s; font-family: inherit; }
 .ai-chip:hover { border-color: #3b82f6; color: #1d4ed8; background: #eff6ff; }
 .rank-up   { color: #dc2626; font-weight: 700; font-size: .75rem; }
 .rank-down { color: #2563a8; font-weight: 700; font-size: .75rem; }
 .rank-same { color: #94a3b8; font-size: .75rem; }
-.report-block { padding-left: 14px; border-left: 3px solid #3b82f6; margin-bottom: 18px; }
-.report-block-title { font-size: .72rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
-.report-block-text  { font-size: .82rem; color: #334155; line-height: 1.8; }
-.report-block-text strong { color: #0f172a; font-weight: 600; }
-.btn {
-  padding: 7px 16px; border-radius: 4px; font-size: .78rem; font-weight: 600;
-  cursor: pointer; transition: all .15s; font-family: inherit; border: none;
-}
-.btn-primary { background: #2563a8; color: #fff; }
-.btn-primary:hover { background: #1e40af; }
-.btn-ghost { background: #fff; border: 1px solid #cbd5e1; color: #334155; }
-.btn-ghost:hover { background: #f8fafc; border-color: #94a3b8; }
-#loading {
-  position: fixed; inset: 0; background: rgba(255,255,255,.75);
-  display: none; align-items: center; justify-content: center; z-index: 999;
-}
-.spinner {
-  width: 36px; height: 36px; border: 3px solid #e2e8f0;
-  border-top-color: #3b82f6; border-radius: 50%; animation: spin .8s linear infinite;
-}
+.btn { padding: 7px 16px; border-radius: 4px; font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .15s; font-family: inherit; border: none; }
+.btn-primary { background: #2563a8; color: #fff; } .btn-primary:hover { background: #1e40af; }
+.btn-ghost { background: #fff; border: 1px solid #cbd5e1; color: #334155; } .btn-ghost:hover { background: #f8fafc; }
+#loading { position: fixed; inset: 0; background: rgba(255,255,255,.75); display: none; align-items: center; justify-content: center; z-index: 999; }
+.spinner { width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .ev-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 16px; }
-.ev-card {
-  background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;
-  padding: 12px 14px; text-align: center;
-}
+.ev-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px 14px; text-align: center; }
 .ev-card-name  { font-size: .72rem; color: #64748b; font-weight: 700; margin-bottom: 4px; }
 .ev-card-val   { font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
 .ev-card-delta { font-size: .72rem; }
-hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
 </style>
 </head>
 <body>
@@ -252,12 +125,8 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
   <nav class="sidebar">
     <div class="sidebar-section">AI 분석</div>
     <ul class="sidebar-menu">
-      <li><a onclick="showPanel('ai')" id="menu-ai" class="active">
-        AI 종합 분석 <span class="sidebar-badge">AI</span>
-      </a></li>
-      <li><a onclick="showPanel('report')" id="menu-report">
-        월간 리포트 <span class="sidebar-badge">AI</span>
-      </a></li>
+      <li><a onclick="showPanel('ai')" id="menu-ai" class="active">AI 종합 분석 <span class="sidebar-badge">AI</span></a></li>
+      <li><a onclick="showPanel('report')" id="menu-report">월간 리포트 <span class="sidebar-badge">AI</span></a></li>
     </ul>
     <div class="sidebar-section">데이터 분석</div>
     <ul class="sidebar-menu">
@@ -271,29 +140,24 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
   </nav>
 
   <div class="main">
-    <!-- 서브헤더 -->
     <div class="subheader">
       <div class="subheader-title" id="subheader-title">AI 종합 분석</div>
       <div class="filter-row">
         <select id="sel-year" onchange="onYearChange()"></select>
-        <select id="sel-month"></select>
-        <select id="sel-hq" onchange="onHqChange()">
-          <option value="">지역본부 전체</option>
-        </select>
+        <select id="sel-month" onchange="onFilterChange()"></select>
+        <select id="sel-hq" onchange="onHqChange()"><option value="">지역본부 전체</option></select>
         <select id="sel-mode" onchange="onModeChange()">
           <option value="sigungu">시군구</option>
           <option value="base">거점</option>
         </select>
-        <select id="sel-loc">
-          <option value="">전체</option>
-        </select>
-        <select id="sel-fuel">
+        <select id="sel-loc" onchange="onFilterChange()"><option value="">전체</option></select>
+        <select id="sel-fuel" onchange="onFilterChange()">
           <option value="">전체 연료</option>
           <option value="ev">EV</option>
           <option value="hev">HEV</option>
           <option value="ice">ICE</option>
         </select>
-        <button class="btn btn-ghost" onclick="refreshData()">↺ 새로고침</button>
+        <button class="btn btn-ghost" onclick="refreshAll()">↺ 새로고침</button>
       </div>
     </div>
 
@@ -302,47 +166,25 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
       <!-- ① AI 종합 분석 -->
       <div class="panel active" id="panel-ai">
         <div class="card">
-          <div class="card-title">
-            분석 유형 선택
+          <div class="card-title">분석 유형 선택
             <button class="btn btn-primary" onclick="runAI()">▶ AI 분석 실행</button>
           </div>
           <div class="ai-type-grid">
-            <div class="ai-type-card selected" onclick="selectAI(this,'crisis')">
-              <div class="ai-type-title">위기/기회 감지</div>
-              <div class="ai-type-desc">M/S 급변 지역 자동 포착</div>
-            </div>
-            <div class="ai-type-card" onclick="selectAI(this,'competitor')">
-              <div class="ai-type-title">경쟁사 추격 분석</div>
-              <div class="ai-type-desc">기아·테슬라 침투 패턴</div>
-            </div>
-            <div class="ai-type-card" onclick="selectAI(this,'ev')">
-              <div class="ai-type-title">EV 전환 현황</div>
-              <div class="ai-type-desc">전기차 침투율 지역 비교</div>
-            </div>
-            <div class="ai-type-card" onclick="selectAI(this,'base')">
-              <div class="ai-type-title">거점 성과 랭킹</div>
-              <div class="ai-type-desc">거점별 순위 변동 분석</div>
-            </div>
-            <div class="ai-type-card" onclick="selectAI(this,'strategy')">
-              <div class="ai-type-title">전략 제언</div>
-              <div class="ai-type-desc">데이터 기반 액션 아이템</div>
-            </div>
-            <div class="ai-type-card" onclick="selectAI(this,'summary')">
-              <div class="ai-type-title">종합 요약</div>
-              <div class="ai-type-desc">전체 지표 핵심 요약</div>
-            </div>
+            <div class="ai-type-card selected" onclick="selectAI(this,'crisis')"><div class="ai-type-title">위기/기회 감지</div><div class="ai-type-desc">M/S 급변 지역 자동 포착</div></div>
+            <div class="ai-type-card" onclick="selectAI(this,'competitor')"><div class="ai-type-title">경쟁사 추격 분석</div><div class="ai-type-desc">기아·테슬라 침투 패턴</div></div>
+            <div class="ai-type-card" onclick="selectAI(this,'ev')"><div class="ai-type-title">EV 전환 현황</div><div class="ai-type-desc">전기차 침투율 지역 비교</div></div>
+            <div class="ai-type-card" onclick="selectAI(this,'base')"><div class="ai-type-title">거점 성과 랭킹</div><div class="ai-type-desc">거점별 순위 변동 분석</div></div>
+            <div class="ai-type-card" onclick="selectAI(this,'strategy')"><div class="ai-type-title">전략 제언</div><div class="ai-type-desc">데이터 기반 액션 아이템</div></div>
+            <div class="ai-type-card" onclick="selectAI(this,'summary')"><div class="ai-type-title">종합 요약</div><div class="ai-type-desc">전체 지표 핵심 요약</div></div>
           </div>
         </div>
-
         <div class="ai-result-header">
           <div class="ai-result-dot"></div>
           <div class="ai-result-label" id="ai-label">분석 결과가 여기에 표시됩니다</div>
           <div class="ai-result-time" id="ai-time">대기 중</div>
         </div>
         <div class="ai-result-body" id="ai-result-body">
-          <div class="ai-text" style="color:#94a3b8;text-align:center;padding:24px 0">
-            분석 유형을 선택하고 AI 분석 실행 버튼을 눌러주세요.
-          </div>
+          <div class="ai-text" style="color:#94a3b8;text-align:center;padding:24px 0">분석 유형을 선택하고 AI 분석 실행 버튼을 눌러주세요.</div>
         </div>
         <div class="ai-followup">
           <div class="ai-followup-row">
@@ -362,84 +204,36 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
       <!-- ② 월간 리포트 -->
       <div class="panel" id="panel-report">
         <div class="card">
-          <div class="card-title">
-            AI 월간 리포트 자동 생성
+          <div class="card-title">AI 월간 리포트 자동 생성
             <div style="display:flex;gap:8px">
               <button class="btn btn-ghost" onclick="copyReport()">복사</button>
               <button class="btn btn-primary" onclick="genReport()">리포트 생성</button>
             </div>
           </div>
-          <div class="alert alert-blue" style="margin-bottom:16px">
-            생성된 리포트는 임원 보고서 초안 또는 PPT 작성에 활용할 수 있습니다.
-          </div>
+          <div class="alert alert-blue">생성된 리포트는 임원 보고서 초안 또는 PPT 작성에 활용할 수 있습니다.</div>
           <div id="report-body">
             <div style="padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #f1f5f9">
               <div style="font-size:.95rem;font-weight:700;color:#0f172a">충북지역본부 월간 영업 현황 보고</div>
               <div style="font-size:.75rem;color:#94a3b8;margin-top:3px">AI 자동 생성 — 리포트 생성 버튼을 눌러주세요</div>
             </div>
-            <div style="text-align:center;padding:32px 0;color:#94a3b8;font-size:.82rem">
-              조건 선택 후 리포트 생성 버튼을 눌러주세요.
-            </div>
+            <div style="text-align:center;padding:32px 0;color:#94a3b8;font-size:.82rem">조건 선택 후 리포트 생성 버튼을 눌러주세요.</div>
           </div>
         </div>
       </div>
 
       <!-- ③ 추세 & 예측 -->
       <div class="panel" id="panel-trend">
-        <div class="alert alert-red">
-          ⚠ 추세 분석은 데이터 업로드 후 자동으로 계산됩니다.
-        </div>
         <div class="card">
-          <div class="card-title">충북 전체 제조사별 M/S 추이 (최근 6개월)</div>
+          <div class="card-title" id="trend-title">제조사별 M/S 추이 (최근 6개월)</div>
           <div class="chart-wrap tall"><canvas id="trendChart"></canvas></div>
         </div>
-        <div class="two-col">
-          <div class="card">
-            <div class="card-title">지역별 하락 추세 경보</div>
-            <div style="display:flex;flex-direction:column;gap:12px">
-              <div>
-                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                  <span style="font-size:.78rem;font-weight:600;color:#0f172a">청주 흥덕구</span>
-                  <span class="up" style="font-size:.75rem">-6.2%p</span>
-                </div>
-                <div class="trend-bar-wrap"><div class="trend-bar up" style="width:82%"></div></div>
-                <div style="font-size:.7rem;color:#94a3b8">현대 M/S 3개월 연속 하락</div>
-              </div>
-              <div>
-                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                  <span style="font-size:.78rem;font-weight:600;color:#0f172a">청주 청원구</span>
-                  <span class="up" style="font-size:.75rem">-3.8%p</span>
-                </div>
-                <div class="trend-bar-wrap"><div class="trend-bar up" style="width:55%"></div></div>
-                <div style="font-size:.7rem;color:#94a3b8">테슬라 침투 가속</div>
-              </div>
-              <div>
-                <div style="display:flex;justify-content:space-between;margin-bottom:3px">
-                  <span style="font-size:.78rem;font-weight:600;color:#0f172a">충주시</span>
-                  <span class="down" style="font-size:.75rem">+2.8%p</span>
-                </div>
-                <div class="trend-bar-wrap"><div class="trend-bar down" style="width:48%"></div></div>
-                <div style="font-size:.7rem;color:#94a3b8">현대 M/S 회복세</div>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">다음 달 M/S 예측</div>
-            <div class="tbl-wrap">
-              <table class="data-tbl">
-                <thead>
-                  <tr>
-                    <th class="left">지역</th><th>현재</th><th>예측</th><th>변화</th><th>신뢰도</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td class="left">충북 전체</td><td>38.2%</td><td>37.4%</td><td class="up">-0.8%p</td><td><span class="badge badge-amber">78%</span></td></tr>
-                  <tr><td class="left">청주 흥덕구</td><td>31.4%</td><td>29.8%</td><td class="up">-1.6%p</td><td><span class="badge badge-red">62%</span></td></tr>
-                  <tr><td class="left">충주시</td><td>42.1%</td><td>43.2%</td><td class="down">+1.1%p</td><td><span class="badge badge-green">85%</span></td></tr>
-                  <tr><td class="left">제천시</td><td>40.1%</td><td>40.4%</td><td class="down">+0.3%p</td><td><span class="badge badge-green">88%</span></td></tr>
-                </tbody>
-              </table>
-            </div>
+        <div class="card">
+          <div class="card-title">경쟁사 현황 (당월)</div>
+          <div class="tbl-wrap">
+            <table class="data-tbl">
+              <thead><tr><th>#</th><th class="left">제조사</th><th>등록대수</th><th>M/S</th><th>전월비</th><th>전년비</th></tr></thead>
+              <tbody id="trend-maker-body"><tr><td colspan="6" class="muted">로딩 중...</td></tr></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -447,68 +241,18 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
       <!-- ④ 이상치 감지 -->
       <div class="panel" id="panel-anomaly">
         <div class="metric-grid">
-          <div class="metric-card red">
-            <div class="metric-label">감지된 이상치</div>
-            <div class="metric-value" style="color:#dc2626">7</div>
-            <div class="metric-delta up">전월 대비 +3건</div>
-          </div>
-          <div class="metric-card amber">
-            <div class="metric-label">긴급 대응 필요</div>
-            <div class="metric-value" style="color:#b45309">2</div>
-            <div class="metric-delta flat">M/S 5%p 이상 급변</div>
-          </div>
-          <div class="metric-card green">
-            <div class="metric-label">기회 신호</div>
-            <div class="metric-value" style="color:#16a34a">3</div>
-            <div class="metric-delta down">점유율 급상승 지역</div>
-          </div>
-          <div class="metric-card blue">
-            <div class="metric-label">모니터링 필요</div>
-            <div class="metric-value" style="color:#2563a8">4</div>
-            <div class="metric-delta flat">2~5%p 변동</div>
-          </div>
+          <div class="metric-card red"><div class="metric-label">M/S 하락 지역</div><div class="metric-value" id="ano-drop" style="color:#dc2626">-</div><div class="metric-delta up" id="ano-drop-sub"></div></div>
+          <div class="metric-card amber"><div class="metric-label">5%p 이상 급변</div><div class="metric-value" id="ano-critical" style="color:#b45309">-</div><div class="metric-delta flat">즉각 대응 필요</div></div>
+          <div class="metric-card green"><div class="metric-label">M/S 상승 지역</div><div class="metric-value" id="ano-rise" style="color:#16a34a">-</div><div class="metric-delta down" id="ano-rise-sub"></div></div>
+          <div class="metric-card blue"><div class="metric-label">데이터 기준</div><div class="metric-value" id="ano-period" style="font-size:.85rem;color:#2563a8">-</div><div class="metric-delta flat">전월 대비</div></div>
         </div>
         <div class="card">
-          <div class="card-title">🚨 위기 신호 — 즉각 대응 필요</div>
-          <ul class="anomaly-list">
-            <li class="anomaly-item">
-              <div class="anomaly-rank">01</div>
-              <div class="anomaly-info">
-                <div class="anomaly-loc">청주 흥덕구 — RV 부문</div>
-                <div class="anomaly-desc">기아 쏘렌토 출시 직후 현대 SUV M/S 급락 · 3σ 초과</div>
-              </div>
-              <span class="badge badge-red">-8.4%p</span>
-            </li>
-            <li class="anomaly-item">
-              <div class="anomaly-rank">02</div>
-              <div class="anomaly-info">
-                <div class="anomaly-loc">청주 청원구 — EV 부문</div>
-                <div class="anomaly-desc">테슬라 Model Y 신규 등록 급증 · 현대 EV 점유 위협</div>
-              </div>
-              <span class="badge badge-red">-5.2%p</span>
-            </li>
-          </ul>
+          <div class="card-title">🚨 M/S 하락 — 대응 필요</div>
+          <ul class="anomaly-list" id="ano-drop-list"><li style="padding:16px;color:#94a3b8;text-align:center">로딩 중...</li></ul>
         </div>
         <div class="card">
-          <div class="card-title">✅ 기회 신호 — 적극 공략 권고</div>
-          <ul class="anomaly-list">
-            <li class="anomaly-item">
-              <div class="anomaly-rank">03</div>
-              <div class="anomaly-info">
-                <div class="anomaly-loc">충주시 — EV 부문</div>
-                <div class="anomaly-desc">아이오닉5 입소문 효과 · 자연 증가세 지속</div>
-              </div>
-              <span class="badge badge-green">+6.2%p</span>
-            </li>
-            <li class="anomaly-item">
-              <div class="anomaly-rank">04</div>
-              <div class="anomaly-info">
-                <div class="anomaly-loc">제천시 — 대형SUV</div>
-                <div class="anomaly-desc">팰리세이드 신규 색상 출시 후 수요 급등</div>
-              </div>
-              <span class="badge badge-green">+4.8%p</span>
-            </li>
-          </ul>
+          <div class="card-title">✅ M/S 상승 — 공략 기회</div>
+          <ul class="anomaly-list" id="ano-rise-list"><li style="padding:16px;color:#94a3b8;text-align:center">로딩 중...</li></ul>
         </div>
       </div>
 
@@ -516,30 +260,20 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
       <div class="panel" id="panel-classmix">
         <div class="two-col">
           <div class="card">
-            <div class="card-title">충북 차급별 시장 비중</div>
+            <div class="card-title" id="classmix-title1">차급별 시장 비중</div>
             <div class="chart-wrap"><canvas id="classMixChart"></canvas></div>
           </div>
           <div class="card">
-            <div class="card-title">차급별 현대 M/S (전월 대비)</div>
+            <div class="card-title" id="classmix-title2">차급별 현대 M/S</div>
             <div class="chart-wrap"><canvas id="classHyundaiChart"></canvas></div>
           </div>
         </div>
         <div class="card">
-          <div class="card-title">차급별 기회/위협 매트릭스</div>
+          <div class="card-title">차급별 현황</div>
           <div class="tbl-wrap">
             <table class="data-tbl">
-              <thead>
-                <tr>
-                  <th class="left">차급</th><th>시장 비중</th><th>비중 변화</th>
-                  <th>현대 M/S</th><th>M/S 변화</th><th>판단</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td class="left">중형SUV</td><td>28.4%</td><td class="down">+2.1%p↑</td><td>41.2%</td><td class="up">-3.4%p</td><td><span class="badge badge-red">위협</span></td></tr>
-                <tr><td class="left">대형SUV</td><td>12.8%</td><td class="down">+1.2%p↑</td><td>58.4%</td><td class="down">+1.8%p</td><td><span class="badge badge-green">기회</span></td></tr>
-                <tr><td class="left">중형</td><td>18.2%</td><td class="up">-1.8%p↓</td><td>44.1%</td><td style="color:#94a3b8">±0.2%p</td><td><span class="badge badge-gray">유지</span></td></tr>
-                <tr><td class="left">EV</td><td>18.4%</td><td class="down">+3.2%p↑</td><td>52.3%</td><td class="up">-2.1%p</td><td><span class="badge badge-amber">주의</span></td></tr>
-              </tbody>
+              <thead><tr><th class="left">차급</th><th>시장 비중</th><th>현대 M/S</th><th>현대 대수</th><th>전체 대수</th></tr></thead>
+              <tbody id="classmix-body"><tr><td colspan="5" class="muted">로딩 중...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -548,54 +282,21 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
       <!-- ⑥ 거점 기여도 -->
       <div class="panel" id="panel-base">
         <div class="metric-grid">
-          <div class="metric-card green">
-            <div class="metric-label">1위 거점</div>
-            <div class="metric-value" style="font-size:1rem;color:#16a34a">충주거점</div>
-            <div class="metric-delta down">M/S 42.1% (+1.2%p)</div>
-          </div>
-          <div class="metric-card red">
-            <div class="metric-label">최대 하락 거점</div>
-            <div class="metric-value" style="font-size:1rem;color:#dc2626">청주서부</div>
-            <div class="metric-delta up">M/S 31.4% (-4.2%p)</div>
-          </div>
-          <div class="metric-card blue">
-            <div class="metric-label">최대 상승 거점</div>
-            <div class="metric-value" style="font-size:1rem;color:#2563a8">제천거점</div>
-            <div class="metric-delta down">M/S 40.1% (+2.1%p)</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">평균 M/S</div>
-            <div class="metric-value">38.2%</div>
-            <div class="metric-delta up">전월비 -0.8%p</div>
-          </div>
+          <div class="metric-card green"><div class="metric-label">1위 거점</div><div class="metric-value" id="base-top" style="font-size:1rem;color:#16a34a">-</div><div class="metric-delta down" id="base-top-sub"></div></div>
+          <div class="metric-card red"><div class="metric-label">최대 하락</div><div class="metric-value" id="base-drop" style="font-size:1rem;color:#dc2626">-</div><div class="metric-delta up" id="base-drop-sub"></div></div>
+          <div class="metric-card blue"><div class="metric-label">최대 상승</div><div class="metric-value" id="base-rise" style="font-size:1rem;color:#2563a8">-</div><div class="metric-delta down" id="base-rise-sub"></div></div>
+          <div class="metric-card"><div class="metric-label">현대 평균 M/S</div><div class="metric-value" id="base-avg">-</div><div class="metric-delta" id="base-avg-sub"></div></div>
         </div>
-        <div class="two-col">
-          <div class="card">
-            <div class="card-title">거점별 M/S 비교</div>
-            <div class="chart-wrap"><canvas id="baseChart"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="card-title">1위 거점(충주) 강점 패턴</div>
-            <div class="chart-wrap"><canvas id="baseRadarChart"></canvas></div>
-          </div>
+        <div class="card">
+          <div class="card-title" id="base-chart-title">거점별 M/S 비교</div>
+          <div class="chart-wrap tall"><canvas id="baseChart"></canvas></div>
         </div>
         <div class="card">
           <div class="card-title">거점별 성과 랭킹</div>
           <div class="tbl-wrap">
             <table class="data-tbl">
-              <thead>
-                <tr>
-                  <th>순위</th><th class="left">거점</th><th>현대 M/S</th>
-                  <th>전월비</th><th>순위 변동</th><th>강점</th><th>약점</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td class="muted">1위</td><td class="left">충주거점</td><td>42.1%</td><td class="down">+1.2%p</td><td><span class="rank-up">▲2</span></td><td><span class="badge badge-blue">EV</span></td><td><span class="badge badge-gray">상용</span></td></tr>
-                <tr><td class="muted">2위</td><td class="left">제천거점</td><td>40.1%</td><td class="down">+2.1%p</td><td><span class="rank-up">▲1</span></td><td><span class="badge badge-blue">대형SUV</span></td><td><span class="badge badge-gray">소형</span></td></tr>
-                <tr><td class="muted">3위</td><td class="left">청주북부</td><td>39.8%</td><td style="color:#94a3b8">+0.1%p</td><td><span class="rank-same">─</span></td><td><span class="badge badge-blue">중형</span></td><td><span class="badge badge-gray">EV</span></td></tr>
-                <tr><td class="muted">4위</td><td class="left">청주동부</td><td>37.2%</td><td class="up">-1.4%p</td><td><span class="rank-down">▼1</span></td><td><span class="badge badge-blue">중형SUV</span></td><td><span class="badge badge-gray">RV</span></td></tr>
-                <tr><td class="muted">5위</td><td class="left">청주서부</td><td>31.4%</td><td class="up">-4.2%p</td><td><span class="rank-down">▼3</span></td><td><span class="badge badge-blue">세단</span></td><td><span class="badge badge-red">RV</span></td></tr>
-              </tbody>
+              <thead><tr><th>순위</th><th class="left">거점</th><th>현대 M/S</th><th>전월비</th><th>현대 대수</th><th>전체 대수</th></tr></thead>
+              <tbody id="base-rank-body"><tr><td colspan="6" class="muted">로딩 중...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -604,40 +305,21 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
       <!-- ⑦ EV 전용 뷰 -->
       <div class="panel" id="panel-ev">
         <div class="metric-grid">
-          <div class="metric-card blue">
-            <div class="metric-label">충북 EV 비중</div>
-            <div class="metric-value" style="color:#2563a8">18.4%</div>
-            <div class="metric-delta down">전국 평균 +2.2%p</div>
-          </div>
-          <div class="metric-card green">
-            <div class="metric-label">현대 EV M/S</div>
-            <div class="metric-value" style="color:#16a34a">52.3%</div>
-            <div class="metric-delta up">전월비 -2.1%p</div>
-          </div>
-          <div class="metric-card red">
-            <div class="metric-label">테슬라 EV M/S</div>
-            <div class="metric-value" style="color:#dc2626">22.1%</div>
-            <div class="metric-delta up">전월비 +1.8%p ↑ 위협</div>
-          </div>
-          <div class="metric-card amber">
-            <div class="metric-label">BYD EV M/S</div>
-            <div class="metric-value" style="color:#b45309">8.4%</div>
-            <div class="metric-delta up">전월비 +1.2%p ↑ 주의</div>
-          </div>
+          <div class="metric-card blue"><div class="metric-label">EV 비중</div><div class="metric-value" id="ev-share" style="color:#2563a8">-</div><div class="metric-delta" id="ev-share-sub"></div></div>
+          <div class="metric-card green"><div class="metric-label">현대 EV M/S</div><div class="metric-value" id="ev-hyundai-ms" style="color:#16a34a">-</div><div class="metric-delta" id="ev-hyundai-sub"></div></div>
+          <div class="metric-card red"><div class="metric-label">테슬라 EV M/S</div><div class="metric-value" id="ev-tesla-ms" style="color:#dc2626">-</div><div class="metric-delta" id="ev-tesla-sub"></div></div>
+          <div class="metric-card amber"><div class="metric-label">BYD EV M/S</div><div class="metric-value" id="ev-byd-ms" style="color:#b45309">-</div><div class="metric-delta" id="ev-byd-sub"></div></div>
         </div>
-        <div class="ev-grid">
-          <div class="ev-card"><div class="ev-card-name">아이오닉6</div><div class="ev-card-val">28.4%</div><div class="ev-card-delta down">↑ +1.2%p</div></div>
-          <div class="ev-card"><div class="ev-card-name">아이오닉5</div><div class="ev-card-val">16.8%</div><div class="ev-card-delta up">↓ -0.8%p</div></div>
-          <div class="ev-card"><div class="ev-card-name">EV6 (기아)</div><div class="ev-card-val">12.4%</div><div class="ev-card-delta down">↑ +0.4%p</div></div>
-          <div class="ev-card"><div class="ev-card-name">테슬라 Model Y</div><div class="ev-card-val">14.2%</div><div class="ev-card-delta up">↑ +2.1%p ⚠</div></div>
+        <div class="ev-grid" id="ev-model-grid">
+          <div class="ev-card"><div class="ev-card-name">로딩 중...</div></div>
         </div>
         <div class="two-col">
           <div class="card">
-            <div class="card-title">EV M/S 추이 (6개월)</div>
-            <div class="chart-wrap"><canvas id="evTrendChart"></canvas></div>
+            <div class="card-title">EV 제조사별 M/S</div>
+            <div class="chart-wrap"><canvas id="evMakerChart"></canvas></div>
           </div>
           <div class="card">
-            <div class="card-title">지역별 EV 침투율</div>
+            <div class="card-title">지역별 EV 등록 현황</div>
             <div class="chart-wrap"><canvas id="evRegionChart"></canvas></div>
           </div>
         </div>
@@ -645,29 +327,16 @@ hr { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
 
       <!-- ⑧ 경쟁사 추격 -->
       <div class="panel" id="panel-competitor">
-        <div class="alert alert-red">
-          🚨 청주 흥덕구에서 현대-기아 M/S 격차가 8.2%p → 4.1%p로 급격히 축소 중.
-        </div>
         <div class="card">
-          <div class="card-title">현대 vs 기아 M/S 격차 추이 (충북 전체)</div>
+          <div class="card-title" id="comp-title">경쟁사별 M/S 현황</div>
           <div class="chart-wrap tall"><canvas id="competitorChart"></canvas></div>
         </div>
         <div class="card">
-          <div class="card-title">경쟁사별 침투 현황</div>
+          <div class="card-title">경쟁사별 상세 현황</div>
           <div class="tbl-wrap">
             <table class="data-tbl">
-              <thead>
-                <tr>
-                  <th class="left">경쟁사</th><th>현재 M/S</th><th>3개월 변화</th>
-                  <th>강한 지역</th><th>집중 차급</th><th>위협도</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td class="left">기아</td><td>31.4%</td><td class="up">+2.8%p</td><td>청주 흥덕구</td><td><span class="badge badge-blue">중형SUV</span></td><td><span class="badge badge-red">매우 높음</span></td></tr>
-                <tr><td class="left">테슬라</td><td>4.2%</td><td class="up">+1.4%p</td><td>청주 청원구</td><td><span class="badge badge-blue">EV 전용</span></td><td><span class="badge badge-amber">높음</span></td></tr>
-                <tr><td class="left">BYD</td><td>1.8%</td><td class="up">+0.9%p</td><td>음성군</td><td><span class="badge badge-blue">상용·EV</span></td><td><span class="badge badge-amber">중간</span></td></tr>
-                <tr><td class="left">르노</td><td>2.1%</td><td style="color:#94a3b8">+0.2%p</td><td>청주 서원구</td><td><span class="badge badge-blue">소형SUV</span></td><td><span class="badge badge-green">낮음</span></td></tr>
-              </tbody>
+              <thead><tr><th class="left">제조사</th><th>현재 M/S</th><th>전월비</th><th>전년비</th><th>등록대수</th></tr></thead>
+              <tbody id="comp-body"><tr><td colspan="5" class="muted">로딩 중...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -688,293 +357,548 @@ const PANEL_LABELS = {
 let aiType = 'crisis';
 const charts = {};
 
-function showPanel(name) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  document.getElementById('menu-' + name).classList.add('active');
-  document.getElementById('subheader-title').textContent = PANEL_LABELS[name];
-  if (name === 'trend')      initTrend();
-  if (name === 'classmix')   initClassMix();
-  if (name === 'base')       initBase();
-  if (name === 'ev')         initEv();
-  if (name === 'competitor') initCompetitor();
+/* ─── 헬퍼 ─── */
+const g = id => document.getElementById(id);
+const fmt = n => Number(n||0).toLocaleString();
+const r1  = v => Math.round((v||0)*10)/10;
+const pct = (a,b) => b ? r1(a/b*100) : 0;
+const diffCls = d => d > 0 ? 'up' : d < 0 ? 'down' : '';
+const diffSign = d => d > 0 ? '+' : '';
+const loading = show => g('loading').style.display = show ? 'flex' : 'none';
+
+function getF() {
+  return {
+    year:  parseInt(g('sel-year').value),
+    month: parseInt(g('sel-month').value),
+    hq:    g('sel-hq').value   || '',
+    mode:  g('sel-mode').value || 'sigungu',
+    loc:   g('sel-loc').value  || '',
+    fuel:  g('sel-fuel').value || '',
+  };
 }
 
-function selectAI(el, type) {
-  document.querySelectorAll('.ai-type-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  aiType = type;
+function qs(f, overrides={}) {
+  const p = {...f, ...overrides};
+  const params = new URLSearchParams({
+    mode: p.mode, year: p.year, month: p.month,
+  });
+  if (p.hq)   params.set('headquarters', p.hq);
+  if (p.fuel) params.set('fuel_group', p.fuel);
+  const locCol = p.mode === 'base' ? 'base' : 'sigungu';
+  if (p.loc)  params.set(locCol, p.loc);
+  return params.toString();
 }
 
-function setQ(q) { document.getElementById('ai-q').value = q; }
-
-function loading(show) {
-  document.getElementById('loading').style.display = show ? 'flex' : 'none';
+async function api(url) {
+  const r = await fetch(url);
+  return r.json();
 }
 
-/* ─── 필터 동적 로드 ─── */
+/* ─── 필터 로드 ─── */
 async function loadAnalysisOptions() {
   try {
-    const mode = document.getElementById('sel-mode')?.value || 'sigungu';
-    const hq   = document.getElementById('sel-hq')?.value  || '';
-    const data = await fetch(`/api/options?mode=${mode}&headquarters=${encodeURIComponent(hq)}`).then(r => r.json());
+    const mode = g('sel-mode')?.value || 'sigungu';
+    const hq   = g('sel-hq')?.value  || '';
+    const data = await api(`/api/options?mode=${mode}&headquarters=${encodeURIComponent(hq)}`);
+    const yearSel = g('sel-year'), monthSel = g('sel-month');
+    const hqSel   = g('sel-hq'),  locSel   = g('sel-loc');
 
-    const yearSel  = document.getElementById('sel-year');
-    const monthSel = document.getElementById('sel-month');
-    const hqSel    = document.getElementById('sel-hq');
-    const locSel   = document.getElementById('sel-loc');
+    if (hqSel.options.length <= 1)
+      (data.headquarters||[]).forEach(h => hqSel.appendChild(new Option(h,h)));
 
-    // 지역본부
-    if (hqSel.options.length <= 1) {
-      (data.headquarters || []).forEach(h => hqSel.appendChild(new Option(h, h)));
+    if (data.years?.length) {
+      const cur = yearSel.value;
+      yearSel.innerHTML = data.years.slice().reverse().map(y=>`<option value="${y}">${y}년</option>`).join('');
+      if (cur) yearSel.value = cur;
     }
-
-    // 연도
-    if (data.years && data.years.length) {
-      const curYear = yearSel.value;
-      yearSel.innerHTML = data.years.slice().reverse()
-        .map(y => `<option value="${y}">${y}년</option>`).join('');
-      if (curYear) yearSel.value = curYear;
-    }
-
-    // 월 (선택된 연도 기준)
-    if (data.ym_list && data.ym_list.length) {
-      const last = data.ym_list[data.ym_list.length - 1];
+    if (data.ym_list?.length) {
+      const last = data.ym_list[data.ym_list.length-1];
       if (!yearSel.value) yearSel.value = last.year;
       const selYear = parseInt(yearSel.value);
-      const months = [...new Set(
-        data.ym_list.filter(r => r.year === selYear).map(r => r.month)
-      )].sort((a, b) => b - a);
-      const curMonth = monthSel.value;
-      monthSel.innerHTML = months.map(m => `<option value="${m}">${m}월</option>`).join('');
-      if (curMonth && months.includes(parseInt(curMonth))) monthSel.value = curMonth;
+      const months = [...new Set(data.ym_list.filter(r=>r.year===selYear).map(r=>r.month))].sort((a,b)=>b-a);
+      const curM = monthSel.value;
+      monthSel.innerHTML = months.map(m=>`<option value="${m}">${m}월</option>`).join('');
+      if (curM && months.includes(parseInt(curM))) monthSel.value = curM;
     }
-
-    // 지역 (시군구 or 거점)
     const locLabel = mode === 'base' ? '거점 전체' : '시군구 전체';
     locSel.innerHTML = `<option value="">${locLabel}</option>` +
-      (data.locations || []).map(l => `<option value="${l}">${l}</option>`).join('');
-
-  } catch(e) { console.error('옵션 로드 오류:', e); }
+      (data.locations||[]).map(l=>`<option value="${l}">${l}</option>`).join('');
+  } catch(e) { console.error(e); }
 }
 
-async function onYearChange() { await loadAnalysisOptions(); }
-async function onHqChange()   { await loadAnalysisOptions(); }
-async function onModeChange() { await loadAnalysisOptions(); }
+async function onYearChange()  { await loadAnalysisOptions(); }
+async function onHqChange()    { await loadAnalysisOptions(); }
+async function onModeChange()  { await loadAnalysisOptions(); onFilterChange(); }
+function onFilterChange() {
+  const name = document.querySelector('.panel.active')?.id?.replace('panel-','');
+  if (!name || name==='ai' || name==='report') return;
+  refreshPanel(name);
+}
+async function refreshAll() {
+  await loadAnalysisOptions();
+  const name = document.querySelector('.panel.active')?.id?.replace('panel-','');
+  if (name && name!=='ai' && name!=='report') refreshPanel(name);
+}
+window.addEventListener('DOMContentLoaded', async () => { await loadAnalysisOptions(); });
 
-function refreshData() {
-  loadAnalysisOptions();
+/* ─── 패널 전환 ─── */
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-menu a').forEach(a=>a.classList.remove('active'));
+  g('panel-'+name).classList.add('active');
+  g('menu-'+name).classList.add('active');
+  g('subheader-title').textContent = PANEL_LABELS[name];
+  refreshPanel(name);
+}
+
+function refreshPanel(name) {
+  if (name==='trend')      loadTrend();
+  if (name==='anomaly')    loadAnomaly();
+  if (name==='classmix')   loadClassMix();
+  if (name==='base')       loadBase();
+  if (name==='ev')         loadEv();
+  if (name==='competitor') loadCompetitor();
+}
+
+/* ─── 추세 ─── */
+async function loadTrend() {
+  const f = getF();
+  const pmY = f.month>1?f.year:f.year-1, pmM = f.month>1?f.month-1:12;
+
+  // 최근 6개월 구성
+  const months6 = [];
+  let y=f.year, m=f.month;
+  for (let i=0;i<6;i++) { months6.unshift({y,m}); m--; if(m<1){m=12;y--;} }
+
   loading(true);
-  setTimeout(() => loading(false), 800);
+  try {
+    const results = await Promise.all(months6.map(({y,m}) =>
+      api(`/api/by_maker?${qs(f,{year:y,month:m,loc:''})}`)));
+    const currMakers = await api(`/api/by_maker?${qs(f)}`);
+    const pmMakers   = await api(`/api/by_maker?${qs(f,{year:pmY,month:pmM})}`);
+    const pyMakers   = await api(`/api/by_maker?${qs(f,{year:f.year-1,month:f.month})}`);
+
+    const labels = months6.map(({y,m})=>`${String(y).slice(-2)}/${m}월`);
+    const topMakers = ['현대','기아','TESLA','BYD','르노삼성'];
+    const colors = {'현대':'#3b82f6','기아':'#ef4444','TESLA':'#f59e0b','BYD':'#8b5cf6','르노삼성':'#10b981'};
+
+    const datasets = topMakers.map(mk=>({
+      label: mk,
+      data: results.map(r => {
+        const g2 = r.grand||1;
+        const row = r.rows?.find(x=>x.maker===mk);
+        return row ? r1(row.total/g2*100) : 0;
+      }),
+      borderColor: colors[mk]||'#94a3b8',
+      backgroundColor: (colors[mk]||'#94a3b8')+'22',
+      tension:.3, fill: mk==='현대', pointRadius:3,
+    }));
+
+    if (charts.trend) { charts.trend.destroy(); delete charts.trend; }
+    const gc='#e2e8f0', tc='#94a3b8', fo={size:11};
+    charts.trend = new Chart(g('trendChart').getContext('2d'), {
+      type:'line', data:{labels,datasets},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:tc,font:fo,boxWidth:11}}},
+        scales:{
+          x:{ticks:{color:tc,font:fo},grid:{color:gc}},
+          y:{ticks:{color:tc,font:fo,callback:v=>v+'%'},grid:{color:gc}}
+        }
+      }
+    });
+
+    const pmMap = Object.fromEntries((pmMakers.rows||[]).map(r=>[r.maker,{total:r.total,ms:r.ms}]));
+    const pyMap = Object.fromEntries((pyMakers.rows||[]).map(r=>[r.maker,{total:r.total,ms:r.ms}]));
+    const grand = currMakers.grand||1;
+    g('trend-title').textContent = `제조사별 M/S 추이 (최근 6개월) — ${f.year}년 ${f.month}월 기준`;
+    g('trend-maker-body').innerHTML = (currMakers.rows||[]).slice(0,10).map((r,i)=>{
+      const ms = r1(r.total/grand*100);
+      const pm = pmMap[r.maker]; const py = pyMap[r.maker];
+      const momD = pm ? r1(ms-(pm.total/(pmMakers.grand||1)*100)) : null;
+      const yoyD = py ? r1(ms-(py.total/(pyMakers.grand||1)*100)) : null;
+      return `<tr>
+        <td class="muted">${i+1}</td>
+        <td class="left">${r.maker}</td>
+        <td>${fmt(r.total)}</td>
+        <td><strong>${ms}%</strong></td>
+        <td class="${diffCls(momD)}">${momD!==null?diffSign(momD)+momD+'%p':'-'}</td>
+        <td class="${diffCls(yoyD)}">${yoyD!==null?diffSign(yoyD)+yoyD+'%p':'-'}</td>
+      </tr>`;
+    }).join('');
+  } finally { loading(false); }
 }
 
-window.addEventListener('DOMContentLoaded', loadAnalysisOptions);
+/* ─── 이상치 감지 ─── */
+async function loadAnomaly() {
+  const f = getF();
+  const pmY = f.month>1?f.year:f.year-1, pmM = f.month>1?f.month-1:12;
+  const locCol = f.mode==='base'?'base':'sigungu';
+  loading(true);
+  try {
+    const [curr, prev] = await Promise.all([
+      api(`/api/by_maker?${qs(f)}`),
+      api(`/api/by_maker?${qs(f,{year:pmY,month:pmM})}`)
+    ]);
+
+    // 지역별 현대 M/S 비교
+    const tbl = f.mode==='base'?'agg_base':'agg_sigungu';
+    // by_maker API로 지역별 데이터 가져오기 (summary 활용)
+    const locList = await api(`/api/options?mode=${f.mode}&headquarters=${encodeURIComponent(f.hq)}`);
+    const locs = (locList.locations||[]).slice(0,15);
+
+    const locData = await Promise.all(locs.map(async loc => {
+      const p = qs(f, {loc});
+      const pp = qs(f, {year:pmY, month:pmM, loc});
+      const [c,pv] = await Promise.all([api(`/api/summary?${p}`),api(`/api/summary?${pp}`)]);
+      const msC = c.ms_hyundai||0, msP = pv.ms_hyundai||0;
+      return { loc, msC, msP, diff: r1(msC-msP), total: c.total||0 };
+    }));
+
+    const drops = locData.filter(d=>d.diff<0).sort((a,b)=>a.diff-b.diff);
+    const rises = locData.filter(d=>d.diff>0).sort((a,b)=>b.diff-a.diff);
+    const critical = locData.filter(d=>Math.abs(d.diff)>=5).length;
+
+    g('ano-drop').textContent = drops.length+'개';
+    g('ano-drop-sub').textContent = `평균 ${drops.length?r1(drops.reduce((s,d)=>s+d.diff,0)/drops.length):0}%p`;
+    g('ano-critical').textContent = critical+'개';
+    g('ano-rise').textContent = rises.length+'개';
+    g('ano-rise-sub').textContent = `평균 +${rises.length?r1(rises.reduce((s,d)=>s+d.diff,0)/rises.length):0}%p`;
+    g('ano-period').textContent = `${f.year}년 ${f.month}월`;
+
+    g('ano-drop-list').innerHTML = drops.slice(0,5).map((d,i)=>`
+      <li class="anomaly-item">
+        <div class="anomaly-rank">${String(i+1).padStart(2,'0')}</div>
+        <div class="anomaly-info">
+          <div class="anomaly-loc">${d.loc}</div>
+          <div class="anomaly-desc">현대 M/S ${d.msP}% → ${d.msC}% · 전체 ${fmt(d.total)}대</div>
+        </div>
+        <span class="badge badge-red">${d.diff}%p</span>
+      </li>`).join('') || '<li style="padding:12px;color:#94a3b8;text-align:center">하락 지역 없음</li>';
+
+    g('ano-rise-list').innerHTML = rises.slice(0,5).map((d,i)=>`
+      <li class="anomaly-item">
+        <div class="anomaly-rank">${String(i+1).padStart(2,'0')}</div>
+        <div class="anomaly-info">
+          <div class="anomaly-loc">${d.loc}</div>
+          <div class="anomaly-desc">현대 M/S ${d.msP}% → ${d.msC}% · 전체 ${fmt(d.total)}대</div>
+        </div>
+        <span class="badge badge-green">+${d.diff}%p</span>
+      </li>`).join('') || '<li style="padding:12px;color:#94a3b8;text-align:center">상승 지역 없음</li>';
+  } finally { loading(false); }
+}
+
+/* ─── 차급 믹스 ─── */
+async function loadClassMix() {
+  const f = getF();
+  const pmY = f.month>1?f.year:f.year-1, pmM = f.month>1?f.month-1:12;
+  loading(true);
+  try {
+    const [curr, prev] = await Promise.all([
+      api(`/api/ms_report?${qs(f)}&loc=${encodeURIComponent(f.loc||'전체')}`),
+      api(`/api/ms_report?${qs(f,{year:pmY,month:pmM})}&loc=${encodeURIComponent(f.loc||'전체')}`)
+    ]);
+
+    const sections = curr.mom?.curr || {};
+    const sectionsPm = curr.mom?.prev || {};
+    const classData = [];
+    for (const [sec, classes] of Object.entries(sections)) {
+      for (const [cls, makers] of Object.entries(classes)) {
+        const total = Object.values(makers).reduce((s,m)=>s+(m.cnt||0),0);
+        const hyundai = makers['현대']?.cnt||0;
+        const totalPm = Object.values(sectionsPm[sec]?.[cls]||{}).reduce((s,m)=>s+(m.cnt||0),0);
+        if (total > 0) classData.push({cls, total, hyundai, totalPm, ms: pct(hyundai,total)});
+      }
+    }
+    classData.sort((a,b)=>b.total-a.total);
+    const grandTotal = classData.reduce((s,d)=>s+d.total,0)||1;
+
+    const gc='#e2e8f0', tc='#94a3b8', fo={size:11};
+    if (charts.classMix) { charts.classMix.destroy(); delete charts.classMix; }
+    charts.classMix = new Chart(g('classMixChart').getContext('2d'), {
+      type:'doughnut',
+      data:{
+        labels: classData.map(d=>d.cls),
+        datasets:[{data: classData.map(d=>r1(d.total/grandTotal*100)),
+          backgroundColor:['#3b82f6','#10b981','#f59e0b','#6366f1','#ef4444','#94a3b8','#e2e8f0','#f97316','#ec4899','#0ea5e9'],
+          borderWidth:0}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:tc,font:fo,boxWidth:10}}}}
+    });
+
+    if (charts.classHyundai) { charts.classHyundai.destroy(); delete charts.classHyundai; }
+    charts.classHyundai = new Chart(g('classHyundaiChart').getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: classData.slice(0,7).map(d=>d.cls),
+        datasets:[{label:'현대 M/S', data:classData.slice(0,7).map(d=>d.ms), backgroundColor:'#3b82f6'}]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:fo,boxWidth:11}}},
+        scales:{x:{ticks:{color:tc,font:fo},grid:{color:gc}},y:{ticks:{color:tc,font:fo,callback:v=>v+'%'},grid:{color:gc}}}}
+    });
+
+    g('classmix-title1').textContent = `차급별 시장 비중 — ${f.year}년 ${f.month}월`;
+    g('classmix-title2').textContent = `차급별 현대 M/S — ${f.year}년 ${f.month}월`;
+    g('classmix-body').innerHTML = classData.map(d=>`<tr>
+      <td class="left">${d.cls}</td>
+      <td>${r1(d.total/grandTotal*100)}%</td>
+      <td><strong>${d.ms}%</strong></td>
+      <td>${fmt(d.hyundai)}</td>
+      <td>${fmt(d.total)}</td>
+    </tr>`).join('');
+  } finally { loading(false); }
+}
+
+/* ─── 거점 기여도 ─── */
+async function loadBase() {
+  const f = getF();
+  const pmY = f.month>1?f.year:f.year-1, pmM = f.month>1?f.month-1:12;
+  const locList = await api(`/api/options?mode=base&headquarters=${encodeURIComponent(f.hq)}`);
+  const bases = (locList.locations||[]).slice(0,20);
+  loading(true);
+  try {
+    const baseData = await Promise.all(bases.map(async b => {
+      const p  = new URLSearchParams({mode:'base',year:f.year,month:f.month,base:b});
+      const pp = new URLSearchParams({mode:'base',year:pmY,month:pmM,base:b});
+      if (f.hq) { p.set('headquarters',f.hq); pp.set('headquarters',f.hq); }
+      const [c,pv] = await Promise.all([api(`/api/summary?${p}`),api(`/api/summary?${pp}`)]);
+      return { base:b, total:c.total||0, hyundai:c.hyundai||0, ms:c.ms_hyundai||0,
+               mspm: pv.ms_hyundai||0, diff:r1((c.ms_hyundai||0)-(pv.ms_hyundai||0)) };
+    }));
+    baseData.sort((a,b)=>b.ms-a.ms);
+
+    const top1  = baseData[0]||{};
+    const drops = [...baseData].sort((a,b)=>a.diff-b.diff)[0]||{};
+    const rises = [...baseData].sort((a,b)=>b.diff-a.diff)[0]||{};
+    const avgMs = r1(baseData.reduce((s,d)=>s+d.ms,0)/(baseData.length||1));
+
+    g('base-top').textContent  = top1.base||'-';
+    g('base-top-sub').textContent = `M/S ${top1.ms||0}% (${diffSign(top1.diff)}${top1.diff||0}%p)`;
+    g('base-drop').textContent = drops.base||'-';
+    g('base-drop-sub').textContent = `M/S ${drops.ms||0}% (${drops.diff||0}%p)`;
+    g('base-rise').textContent = rises.base||'-';
+    g('base-rise-sub').textContent = `M/S ${rises.ms||0}% (+${rises.diff||0}%p)`;
+    g('base-avg').textContent  = avgMs+'%';
+
+    if (charts.base) { charts.base.destroy(); delete charts.base; }
+    const gc='#e2e8f0', tc='#94a3b8', fo={size:11};
+    const colors = baseData.map(d => d.ms>=40?'#10b981':d.ms>=35?'#3b82f6':d.ms>=30?'#f59e0b':'#ef4444');
+    charts.base = new Chart(g('baseChart').getContext('2d'), {
+      type:'bar',
+      data:{ labels:baseData.map(d=>d.base), datasets:[{label:'현대 M/S', data:baseData.map(d=>d.ms), backgroundColor:colors}] },
+      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+        plugins:{legend:{labels:{color:tc,font:fo,boxWidth:11}}},
+        scales:{x:{ticks:{color:tc,font:fo,callback:v=>v+'%'},grid:{color:gc}},y:{ticks:{color:tc,font:fo},grid:{color:gc}}}}
+    });
+    g('base-chart-title').textContent = `거점별 현대 M/S — ${f.year}년 ${f.month}월`;
+
+    g('base-rank-body').innerHTML = baseData.map((d,i)=>`<tr>
+      <td class="muted">${i+1}위</td>
+      <td class="left">${d.base}</td>
+      <td><strong>${d.ms}%</strong></td>
+      <td class="${diffCls(d.diff)}">${diffSign(d.diff)}${d.diff}%p</td>
+      <td>${fmt(d.hyundai)}</td>
+      <td>${fmt(d.total)}</td>
+    </tr>`).join('');
+  } finally { loading(false); }
+}
+
+/* ─── EV 전용 ─── */
+async function loadEv() {
+  const f = getF();
+  const pmY = f.month>1?f.year:f.year-1, pmM = f.month>1?f.month-1:12;
+  loading(true);
+  try {
+    const fEv = {...f, fuel:'ev'};
+    const [sumAll, sumEv, sumPm, sumEvPm, makerEv, makerEvPm, modelEv, locList] = await Promise.all([
+      api(`/api/summary?${qs(f)}`),
+      api(`/api/summary?${qs(fEv)}`),
+      api(`/api/summary?${qs({...f,year:pmY,month:pmM})}`),
+      api(`/api/summary?${qs({...fEv,year:pmY,month:pmM})}`),
+      api(`/api/by_maker?${qs(fEv)}`),
+      api(`/api/by_maker?${qs({...fEv,year:pmY,month:pmM})}`),
+      api(`/api/by_model?${qs(fEv)}`),
+      api(`/api/options?mode=${f.mode}&headquarters=${encodeURIComponent(f.hq)}`),
+    ]);
+
+    const evShare    = pct(sumEv.total, sumAll.total);
+    const evSharePm  = pct(sumEvPm.total, sumPm.total);
+    const evShareDiff = r1(evShare - evSharePm);
+
+    const evGrand = makerEv.grand||1;
+    const evGrandPm = makerEvPm.grand||1;
+    const mkMap  = Object.fromEntries((makerEv.rows||[]).map(r=>[r.maker,r.total]));
+    const mkMapPm= Object.fromEntries((makerEvPm.rows||[]).map(r=>[r.maker,r.total]));
+
+    const hyMs   = pct(mkMap['현대']||0, evGrand);
+    const hyMsPm = pct(mkMapPm['현대']||0, evGrandPm);
+    const tsMs   = pct(mkMap['TESLA']||0, evGrand);
+    const tsMsPm = pct(mkMapPm['TESLA']||0, evGrandPm);
+    const bydMs  = pct(mkMap['BYD']||0, evGrand);
+    const bydMsPm= pct(mkMapPm['BYD']||0, evGrandPm);
+
+    g('ev-share').textContent     = evShare+'%';
+    g('ev-share-sub').className   = 'metric-delta '+(evShareDiff>=0?'down':'up');
+    g('ev-share-sub').textContent = `전월비 ${diffSign(evShareDiff)}${evShareDiff}%p`;
+    g('ev-hyundai-ms').textContent = hyMs+'%';
+    g('ev-hyundai-sub').className  = 'metric-delta '+(r1(hyMs-hyMsPm)>=0?'down':'up');
+    g('ev-hyundai-sub').textContent= `전월비 ${diffSign(r1(hyMs-hyMsPm))}${r1(hyMs-hyMsPm)}%p`;
+    g('ev-tesla-ms').textContent   = tsMs+'%';
+    g('ev-tesla-sub').className    = 'metric-delta '+(r1(tsMs-tsMsPm)>0?'up':'down');
+    g('ev-tesla-sub').textContent  = `전월비 ${diffSign(r1(tsMs-tsMsPm))}${r1(tsMs-tsMsPm)}%p${r1(tsMs-tsMsPm)>0?' ↑ 위협':''}`;
+    g('ev-byd-ms').textContent     = bydMs+'%';
+    g('ev-byd-sub').className      = 'metric-delta '+(r1(bydMs-bydMsPm)>0?'up':'flat');
+    g('ev-byd-sub').textContent    = `전월비 ${diffSign(r1(bydMs-bydMsPm))}${r1(bydMs-bydMsPm)}%p${r1(bydMs-bydMsPm)>0?' ↑ 주의':''}`;
+
+    const topModels = (modelEv||[]).slice(0,4);
+    g('ev-model-grid').innerHTML = topModels.map(m=>`
+      <div class="ev-card">
+        <div class="ev-card-name">${m.model}</div>
+        <div class="ev-card-val">${fmt(m.total)}대</div>
+        <div class="ev-card-delta">${m.maker}</div>
+      </div>`).join('') || '<div class="ev-card"><div class="ev-card-name">데이터 없음</div></div>';
+
+    const gc='#e2e8f0', tc='#94a3b8', fo={size:11};
+    if (charts.evMaker) { charts.evMaker.destroy(); delete charts.evMaker; }
+    const evRows = (makerEv.rows||[]).slice(0,6);
+    charts.evMaker = new Chart(g('evMakerChart').getContext('2d'), {
+      type:'bar',
+      data:{ labels:evRows.map(r=>r.maker), datasets:[{label:'EV M/S', data:evRows.map(r=>r1(r.total/evGrand*100)), backgroundColor:'#3b82f6'}] },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:fo,boxWidth:11}}},
+        scales:{x:{ticks:{color:tc,font:fo},grid:{color:gc}},y:{ticks:{color:tc,font:fo,callback:v=>v+'%'},grid:{color:gc}}}}
+    });
+
+    // 지역별 EV 침투율
+    const locs = (locList.locations||[]).slice(0,6);
+    const locEvData = await Promise.all(locs.map(async loc=>{
+      const p  = qs(f,{loc}), pEv = qs(fEv,{loc});
+      const [s,sEv] = await Promise.all([api(`/api/summary?${p}`),api(`/api/summary?${pEv}`)]);
+      return {loc, evPct: pct(sEv.total, s.total)};
+    }));
+    if (charts.evRegion) { charts.evRegion.destroy(); delete charts.evRegion; }
+    charts.evRegion = new Chart(g('evRegionChart').getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: locEvData.map(d=>d.loc),
+        datasets:[
+          {label:'EV 비중', data:locEvData.map(d=>d.evPct), backgroundColor:'#3b82f6'},
+          {label:'전체 평균', data:locEvData.map(()=>evShare), type:'line', borderColor:'#ef4444', borderDash:[4,3], pointRadius:0, fill:false, backgroundColor:'transparent'}
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:fo,boxWidth:11}}},
+        scales:{x:{ticks:{color:tc,font:fo},grid:{color:gc}},y:{ticks:{color:tc,font:fo,callback:v=>v+'%'},grid:{color:gc}}}}
+    });
+  } finally { loading(false); }
+}
+
+/* ─── 경쟁사 추격 ─── */
+async function loadCompetitor() {
+  const f = getF();
+  const pmY = f.month>1?f.year:f.year-1, pmM = f.month>1?f.month-1:12;
+
+  // 최근 6개월
+  const months6 = [];
+  let y=f.year, m=f.month;
+  for (let i=0;i<6;i++) { months6.unshift({y,m}); m--; if(m<1){m=12;y--;} }
+
+  loading(true);
+  try {
+    const results = await Promise.all(months6.map(({y,m})=>api(`/api/by_maker?${qs(f,{year:y,month:m,loc:''})}`)));
+    const currMakers = await api(`/api/by_maker?${qs(f)}`);
+    const pmMakers   = await api(`/api/by_maker?${qs(f,{year:pmY,month:pmM})}`);
+    const pyMakers   = await api(`/api/by_maker?${qs(f,{year:f.year-1,month:f.month})}`);
+
+    const labels = months6.map(({y,m})=>`${String(y).slice(-2)}/${m}월`);
+    const mkColors = {'현대':'#3b82f6','기아':'#ef4444','TESLA':'#f59e0b','BYD':'#8b5cf6','르노삼성':'#10b981'};
+    const topMks = ['현대','기아','TESLA','BYD','르노삼성'];
+
+    const datasets = topMks.map(mk=>({
+      label:mk,
+      data:results.map(r=>{ const g2=r.grand||1; const row=r.rows?.find(x=>x.maker===mk); return row?r1(row.total/g2*100):0; }),
+      borderColor:mkColors[mk]||'#94a3b8', backgroundColor:(mkColors[mk]||'#94a3b8')+'22',
+      tension:.3, pointRadius:3, fill:mk==='현대',
+    }));
+
+    const gc='#e2e8f0', tc='#94a3b8', fo={size:11};
+    if (charts.competitor) { charts.competitor.destroy(); delete charts.competitor; }
+    charts.competitor = new Chart(g('competitorChart').getContext('2d'), {
+      type:'line', data:{labels,datasets},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:tc,font:fo,boxWidth:11}}},
+        scales:{x:{ticks:{color:tc,font:fo},grid:{color:gc}},y:{ticks:{color:tc,font:fo,callback:v=>v+'%'},grid:{color:gc}}}}
+    });
+
+    g('comp-title').textContent = `경쟁사별 M/S 현황 — ${f.year}년 ${f.month}월`;
+    const grand = currMakers.grand||1;
+    const pmMap = Object.fromEntries((pmMakers.rows||[]).map(r=>[r.maker,r]));
+    const pyMap = Object.fromEntries((pyMakers.rows||[]).map(r=>[r.maker,r]));
+    g('comp-body').innerHTML = (currMakers.rows||[]).slice(0,8).map(r=>{
+      const ms  = r1(r.total/grand*100);
+      const pmr = pmMap[r.maker]; const pyr = pyMap[r.maker];
+      const momD = pmr ? r1(ms - r1(pmr.total/(pmMakers.grand||1)*100)) : null;
+      const yoyD = pyr ? r1(ms - r1(pyr.total/(pyMakers.grand||1)*100)) : null;
+      return `<tr>
+        <td class="left">${r.maker}</td>
+        <td><strong>${ms}%</strong></td>
+        <td class="${diffCls(momD)}">${momD!==null?diffSign(momD)+momD+'%p':'-'}</td>
+        <td class="${diffCls(yoyD)}">${yoyD!==null?diffSign(yoyD)+yoyD+'%p':'-'}</td>
+        <td>${fmt(r.total)}</td>
+      </tr>`;
+    }).join('');
+  } finally { loading(false); }
+}
 
 /* ─── AI 분석 ─── */
-async function callAI(type, question = '') {
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
-  const loc   = document.getElementById('sel-loc').value || '충북 전체';
-  const fuel  = document.getElementById('sel-fuel').value;
-  const hq    = document.getElementById('sel-hq').value || '';
+function selectAI(el, type) {
+  document.querySelectorAll('.ai-type-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected'); aiType = type;
+}
+function setQ(q) { g('ai-q').value = q; }
 
+async function callAI(type, question='') {
+  const f = getF();
   loading(true);
   try {
     const res = await fetch('/api/ai_analysis', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, year, month, loc, fuel, hq, mode: document.getElementById('sel-mode').value, question })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({type, year:f.year, month:f.month, loc:f.loc||'충북 전체', fuel:f.fuel, hq:f.hq, mode:f.mode, question})
     });
     const data = await res.json();
     loading(false);
-
-    if (!data.ok) {
-      document.getElementById('ai-result-body').innerHTML =
-        `<div class="ai-text" style="color:#dc2626">오류: ${data.msg}</div>`;
-      return;
-    }
-
-    document.getElementById('ai-label').textContent = 'claude-sonnet — ' + type + ' 분석 완료';
-    document.getElementById('ai-time').textContent  = '방금 전';
-    document.getElementById('ai-result-body').innerHTML = `
-      <div class="ai-text">
-        ${data.result.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}
-      </div>`;
+    if (!data.ok) { g('ai-result-body').innerHTML=`<div class="ai-text" style="color:#dc2626">오류: ${data.msg}</div>`; return; }
+    g('ai-label').textContent = 'claude-haiku — '+type+' 분석 완료';
+    g('ai-time').textContent  = '방금 전';
+    g('ai-result-body').innerHTML = `<div class="ai-text">${data.result.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`;
   } catch(e) {
     loading(false);
-    document.getElementById('ai-result-body').innerHTML =
-      `<div class="ai-text" style="color:#dc2626">네트워크 오류: ${e.message}</div>`;
+    g('ai-result-body').innerHTML = `<div class="ai-text" style="color:#dc2626">네트워크 오류: ${e.message}</div>`;
   }
 }
-
 function runAI() { callAI(aiType); }
-
-function askAI() {
-  const q = document.getElementById('ai-q').value.trim();
-  if (!q) return;
-  callAI(aiType, q);
-  document.getElementById('ai-q').value = '';
-}
+function askAI() { const q=g('ai-q').value.trim(); if(!q)return; callAI(aiType,q); g('ai-q').value=''; }
 
 /* ─── 리포트 ─── */
 async function genReport() {
-  const year  = parseInt(document.getElementById('sel-year').value);
-  const month = parseInt(document.getElementById('sel-month').value);
+  const f = getF();
   loading(true);
   try {
-    const res  = await fetch('/api/ai_analysis', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'summary', year, month, loc: '충북 전체', fuel: '', question: '임원 보고용 월간 리포트 형식으로 작성해줘. ① 핵심 요약 ② M/S 현황 ③ 지역별 특이사항 ④ EV 동향 ⑤ 전략 권고 순서로.' })
+    const res = await fetch('/api/ai_analysis', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({type:'summary', year:f.year, month:f.month, loc:'충북 전체', fuel:'', hq:f.hq, mode:f.mode, question:'임원 보고용 월간 리포트 형식으로 작성해줘. ① 핵심 요약 ② M/S 현황 ③ 지역별 특이사항 ④ EV 동향 ⑤ 전략 권고 순서로.'})
     });
     const data = await res.json();
     loading(false);
-    if (!data.ok) { alert('오류: ' + data.msg); return; }
-    document.getElementById('report-body').innerHTML = `
+    if (!data.ok) { alert('오류: '+data.msg); return; }
+    g('report-body').innerHTML = `
       <div style="padding-bottom:14px;margin-bottom:16px;border-bottom:1px solid #f1f5f9">
         <div style="font-size:.95rem;font-weight:700;color:#0f172a">충북지역본부 월간 영업 현황 보고</div>
-        <div style="font-size:.75rem;color:#94a3b8;margin-top:3px">${year}년 ${month}월 · AI 자동 생성</div>
+        <div style="font-size:.75rem;color:#94a3b8;margin-top:3px">${f.year}년 ${f.month}월 · AI 자동 생성</div>
       </div>
-      <div style="font-size:.82rem;color:#334155;line-height:1.9">
-        ${data.result.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>')}
-      </div>`;
-  } catch(e) { loading(false); alert('오류: ' + e.message); }
+      <div style="font-size:.82rem;color:#334155;line-height:1.9">${data.result.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`;
+  } catch(e) { loading(false); alert('오류: '+e.message); }
 }
-
 function copyReport() {
-  navigator.clipboard.writeText(document.getElementById('report-body').innerText)
-    .then(() => alert('리포트가 클립보드에 복사되었습니다.'));
-}
-
-/* ─── 차트 ─── */
-const MO = ['12월','1월','2월','3월','4월','5월'];
-const gc = '#e2e8f0', tc = '#94a3b8', fo = { size: 11 };
-const baseOpt = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: { legend: { labels: { color: tc, font: fo, boxWidth: 11 } } },
-  scales: {
-    x: { ticks: { color: tc, font: fo }, grid: { color: gc } },
-    y: { ticks: { color: tc, font: fo }, grid: { color: gc } }
-  }
-};
-
-function initTrend() {
-  if (charts.trend) return;
-  charts.trend = new Chart(document.getElementById('trendChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: MO,
-      datasets: [
-        { label:'현대', data:[41.2,40.8,40.1,39.4,38.8,38.2], borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.08)', tension:.3, fill:true, pointRadius:3 },
-        { label:'기아', data:[28.8,29.1,29.4,29.8,30.2,31.4], borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.06)', tension:.3, fill:true, pointRadius:3 },
-        { label:'테슬라', data:[2.8,3.0,3.2,3.6,3.9,4.2], borderColor:'#f59e0b', tension:.3, pointRadius:3, fill:false },
-        { label:'예측(현대)', data:[null,null,null,null,null,38.2,37.4], borderColor:'#3b82f6', borderDash:[5,3], tension:.3, pointRadius:3, fill:false },
-      ]
-    },
-    options: { ...baseOpt, scales: { ...baseOpt.scales, y: { ...baseOpt.scales.y, min:25, max:45, ticks:{ color:tc, font:fo, callback:v=>v+'%' } } } }
-  });
-}
-
-function initClassMix() {
-  if (charts.classMix) return;
-  charts.classMix = new Chart(document.getElementById('classMixChart').getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: ['중형SUV','대형SUV','중형','EV','소형SUV','소형트럭','기타'],
-      datasets: [{ data:[28.4,12.8,18.2,18.4,14.6,7.6,3.0], backgroundColor:['#3b82f6','#10b981','#f59e0b','#6366f1','#ef4444','#94a3b8','#e2e8f0'], borderWidth:0 }]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ color:tc, font:fo, boxWidth:10 } } } }
-  });
-  charts.classHyundai = new Chart(document.getElementById('classHyundaiChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: ['중형SUV','대형SUV','중형','EV','소형SUV','소형트럭'],
-      datasets: [
-        { label:'현재', data:[41.2,58.4,44.1,52.3,38.9,62.1], backgroundColor:'#3b82f6' },
-        { label:'전월', data:[44.6,56.6,43.9,54.4,38.5,63.3], backgroundColor:'#e2e8f0' }
-      ]
-    },
-    options: { ...baseOpt, scales: { ...baseOpt.scales, y: { ...baseOpt.scales.y, ticks:{ color:tc, font:fo, callback:v=>v+'%' } } } }
-  });
-}
-
-function initBase() {
-  if (charts.base) return;
-  charts.base = new Chart(document.getElementById('baseChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: ['충주','제천','청주북부','청주동부','청주서부'],
-      datasets: [{ label:'현대 M/S', data:[42.1,40.1,39.8,37.2,31.4], backgroundColor:['#10b981','#10b981','#3b82f6','#f59e0b','#ef4444'] }]
-    },
-    options: { ...baseOpt, indexAxis:'y', scales:{ ...baseOpt.scales, x:{ ...baseOpt.scales.x, ticks:{ color:tc, font:fo, callback:v=>v+'%' } } } }
-  });
-  charts.baseRadar = new Chart(document.getElementById('baseRadarChart').getContext('2d'), {
-    type: 'radar',
-    data: {
-      labels: ['EV','대형SUV','중형SUV','세단','상용','소형SUV'],
-      datasets: [
-        { label:'충주 (1위)', data:[85,72,68,60,45,58], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,.15)', pointBackgroundColor:'#10b981' },
-        { label:'전체 평균',  data:[52,58,41,44,62,39], borderColor:'#94a3b8', backgroundColor:'rgba(148,163,184,.1)',  pointBackgroundColor:'#94a3b8' }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:tc, font:fo, boxWidth:11 } } },
-      scales:{ r:{ ticks:{ color:tc, font:fo, backdropColor:'transparent' }, grid:{ color:gc }, pointLabels:{ color:tc, font:fo } } }
-    }
-  });
-}
-
-function initEv() {
-  if (charts.ev) return;
-  charts.ev = new Chart(document.getElementById('evTrendChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: MO,
-      datasets: [
-        { label:'현대 EV', data:[56.2,55.8,54.4,53.8,53.1,52.3], borderColor:'#3b82f6', tension:.3, pointRadius:3, fill:false },
-        { label:'테슬라',  data:[18.4,19.1,19.8,20.4,21.2,22.1], borderColor:'#ef4444', tension:.3, pointRadius:3, fill:false },
-        { label:'BYD',    data:[4.8,5.4,6.1,6.8,7.4,8.4],         borderColor:'#f59e0b', tension:.3, pointRadius:3, fill:false },
-      ]
-    },
-    options: { ...baseOpt, scales:{ ...baseOpt.scales, y:{ ...baseOpt.scales.y, ticks:{ color:tc, font:fo, callback:v=>v+'%' } } } }
-  });
-  charts.evRegion = new Chart(document.getElementById('evRegionChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: ['청주 청원구','충주시','제천시','청주 흥덕구','청주 상당구'],
-      datasets: [
-        { label:'EV 비중', data:[24.2,21.8,18.4,16.2,14.8], backgroundColor:'#3b82f6' },
-        { label:'전국 평균', data:[16.2,16.2,16.2,16.2,16.2], type:'line', borderColor:'#ef4444', borderDash:[4,3], pointRadius:0, fill:false, backgroundColor:'transparent' }
-      ]
-    },
-    options: { ...baseOpt, scales:{ ...baseOpt.scales, y:{ ...baseOpt.scales.y, ticks:{ color:tc, font:fo, callback:v=>v+'%' } } } }
-  });
-}
-
-function initCompetitor() {
-  if (charts.competitor) return;
-  charts.competitor = new Chart(document.getElementById('competitorChart').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: MO,
-      datasets: [
-        { label:'현대 M/S', data:[41.2,40.8,40.1,39.4,38.8,38.2], borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,.08)', tension:.3, fill:true, pointRadius:3 },
-        { label:'기아 M/S', data:[28.8,29.1,29.4,29.8,30.2,31.4], borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.06)', tension:.3, fill:true, pointRadius:3 },
-        { label:'격차', data:[12.4,11.7,10.7,9.6,8.6,6.8], borderColor:'#f59e0b', borderDash:[5,3], tension:.3, fill:false, pointRadius:3, yAxisID:'y2' },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:tc, font:fo, boxWidth:11 } } },
-      scales:{
-        x:{ ticks:{ color:tc, font:fo }, grid:{ color:gc } },
-        y:{ min:25, max:45, ticks:{ color:tc, font:fo, callback:v=>v+'%' }, grid:{ color:gc } },
-        y2:{ position:'right', ticks:{ color:'#f59e0b', font:fo, callback:v=>v+'%p' }, grid:{ drawOnChartArea:false } }
-      }
-    }
-  });
+  navigator.clipboard.writeText(g('report-body').innerText).then(()=>alert('리포트가 클립보드에 복사되었습니다.'));
 }
 </script>
 </body>
