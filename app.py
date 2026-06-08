@@ -1094,9 +1094,9 @@ def upload():
             return jsonify({'ok':True,
                             'msg':f'[{label}] 시군구 {sg_cnt:,}건 / 거점 {base_cnt:,}건 적재 완료 (집계 중...)'})
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'ok':False,'msg':str(e)}), 500
-    finally:
-        if os.path.exists(save_path): os.remove(save_path)
 
 
 @app.route('/api/agg_status')
