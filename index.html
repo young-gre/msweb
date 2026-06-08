@@ -280,13 +280,12 @@ button { cursor: pointer; border: none; border-radius: 4px; }
 <body>
 
 <header>
-  <div class="header-left">
+  <div class="header-left" id="header-logo" onclick="logoClick()" style="cursor:pointer">
     <div class="header-org">현대자동차</div>
     <div class="header-title">충북지역본부 전용 자동차 등록 현황</div>
   </div>
   <div class="header-right">
-    <a href="/upload" class="header-link">데이터 업로드</a>
-    <a href="/analysis" class="header-link">AI 분석</a>
+    <a href="/analysis" class="header-link">심화 분석</a>
   </div>
 </header>
 
@@ -546,6 +545,17 @@ button { cursor: pointer; border: none; border-radius: 4px; }
 </div>
 
 <script>
+let logoClickCount = 0;
+let logoClickTimer = null;
+function logoClick() {
+  logoClickCount++;
+  clearTimeout(logoClickTimer);
+  logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 3000);
+  if (logoClickCount >= 5) {
+    logoClickCount = 0;
+    window.location.href = '/upload';
+  }
+}
 // ── 전역 상태 ─────────────────────────────────────────
 let options          = {};
 let msData           = null;
