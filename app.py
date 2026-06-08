@@ -1724,11 +1724,15 @@ def ai_analysis():
     fuel     = data.get('fuel', '')
     hq       = data.get('hq', '')
     mode     = data.get('mode', 'sigungu')
+    accum    = data.get('accum', False)
     question = data.get('question', '')
 
     # 모드에 따라 테이블/컬럼 결정
-    tbl     = 'agg_base' if mode == 'base' else 'agg_sigungu'
-    loc_col = 'base'     if mode == 'base' else 'sigungu'
+    if accum:
+        tbl = 'agg_base_accum' if mode == 'base' else 'agg_sigungu_accum'
+    else:
+        tbl = 'agg_base' if mode == 'base' else 'agg_sigungu'
+    loc_col = 'base' if mode == 'base' else 'sigungu'
 
     # DB에서 실제 데이터 수집
     try:
@@ -1814,7 +1818,7 @@ def ai_analysis():
 
     system_prompt = """당신은 현대자동차 충북지역본부 전담 데이터 분석가입니다.
 제공된 자동차 등록 데이터를 바탕으로 영업 전략적 인사이트를 제공합니다.
-답변은 간결하고 실무적으로, 3~5개 단락으로 작성하세요.
+답변은 실무적으로 4~6개 단락으로 완성도 있게 작성하세요. 반드시 완전한 문장으로 끝내세요.
 수치는 반드시 데이터에 근거하고, 구체적인 지역명과 제조사명을 명시하세요.
 마크다운 없이 일반 텍스트로만 답변하세요."""
 

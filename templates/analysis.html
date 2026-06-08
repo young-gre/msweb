@@ -157,6 +157,7 @@ header { background: #1e293b; padding: 0 32px; display: flex; align-items: stret
           <option value="hev">HEV</option>
           <option value="ice">ICE</option>
         </select>
+        <button id="btn-accum" class="btn btn-ghost" onclick="toggleAccum()" style="font-weight:700">누계</button>
         <button class="btn btn-ghost" onclick="refreshAll()">↺ 새로고침</button>
       </div>
     </div>
@@ -355,7 +356,17 @@ const PANEL_LABELS = {
 };
 
 let aiType = 'crisis';
+let isAccum = false;
 const charts = {};
+
+function toggleAccum() {
+  isAccum = !isAccum;
+  const btn = document.getElementById('btn-accum');
+  btn.style.background = isAccum ? '#dc2626' : '';
+  btn.style.color      = isAccum ? '#fff'    : '';
+  btn.style.borderColor= isAccum ? '#dc2626' : '';
+  onFilterChange();
+}
 
 /* ─── 헬퍼 ─── */
 const g = id => document.getElementById(id);
@@ -374,6 +385,7 @@ function getF() {
     mode:  g('sel-mode').value || 'sigungu',
     loc:   g('sel-loc').value  || '',
     fuel:  g('sel-fuel').value || '',
+    accum: isAccum,
   };
 }
 
@@ -381,6 +393,7 @@ function qs(f, overrides={}) {
   const p = {...f, ...overrides};
   const params = new URLSearchParams({
     mode: p.mode, year: p.year, month: p.month,
+    accum: p.accum ? '1' : '',
   });
   if (p.hq)   params.set('headquarters', p.hq);
   if (p.fuel) params.set('fuel_group', p.fuel);
@@ -861,7 +874,7 @@ async function callAI(type, question='') {
   try {
     const res = await fetch('/api/ai_analysis', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({type, year:f.year, month:f.month, loc:f.loc||'충북 전체', fuel:f.fuel, hq:f.hq, mode:f.mode, question})
+      body: JSON.stringify({type, year:f.year, month:f.month, loc:f.loc||'충북 전체', fuel:f.fuel, hq:f.hq, mode:f.mode, accum:f.accum, question})
     });
     const data = await res.json();
     loading(false);
