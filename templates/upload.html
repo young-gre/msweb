@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터 업로드</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 고딕',
+               'Segoe UI', sans-serif;
+  background: #f4f6f9; color: #222; font-size: 14px; line-height: 1.5;
+}
+header {
+  background: #1a3c6e; padding: 0 32px;
+  display: flex; align-items: stretch; justify-content: space-between; height: 56px;
+}
+.header-left { display: flex; flex-direction: column; justify-content: center; }
+.header-org  { font-size: .72rem; color: #a8c8ff; letter-spacing: .08em; margin-bottom: 2px; }
+.header-title{ font-size: 1rem; color: #fff; font-weight: 600; }
+.header-right{ display: flex; align-items: center; gap: 10px; }
+.header-link {
+  color: #a8c8ff; font-size: .78rem; text-decoration: none;
+  padding: 6px 14px; border: 1px solid rgba(168,200,255,.4);
+  border-radius: 3px; transition: all .2s;
+}
+.header-link:hover { background: rgba(255,255,255,.1); color: #fff; }
+.main { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+.card {
+  background: #fff; border: 1px solid #e2e6ed;
+  border-radius: 4px; padding: 24px 28px; margin-bottom: 20px;
+}
+.card-title {
+  font-size: .78rem; font-weight: 700; color: #1a3c6e;
+  letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #e2e6ed;
+}
+.col-guide {
+  background: #f8f9fc; border: 1px solid #e2e6ed;
+  border-radius: 3px; padding: 12px 16px; margin-bottom: 20px;
+  font-size: .78rem; color: #555;
+}
+.col-guide .guide-title {
+  font-weight: 700; color: #1a3c6e; margin-bottom: 6px;
+  font-size: .76rem; letter-spacing: .04em; text-transform: uppercase;
+}
+.col-guide code {
+  background: #e8eef8; padding: 2px 6px; border-radius: 2px;
+  font-family: monospace; font-size: .78rem; color: #1a3c6e;
+  margin-right: 4px; display: inline-block; margin-bottom: 4px;
+}
+.col-guide .guide-note { margin-top: 6px; color: #999; font-size: .74rem; }
+.range-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 14px 16px; margin-bottom: 20px;
+  background: #f8f9fc; border: 1px solid #e2e6ed; border-radius: 3px;
+}
+.range-label { font-size: .72rem; font-weight: 700; color: #1a3c6e; letter-spacing: .04em; white-space: nowrap; }
+.range-radio { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: #444; cursor: pointer; }
+.range-radio input { accent-color: #1a3c6e; cursor: pointer; }
+.ym-selects { display: none; align-items: center; gap: 8px; }
+.ym-selects.show { display: flex; }
+.ym-selects select {
+  padding: 5px 10px; border: 1px solid #cfd5de;
+  border-radius: 3px; font-size: .82rem; color: #222; background: #fff;
+}
+.drop-zone {
+  border: 2px dashed #c8d8f0; border-radius: 4px;
+  padding: 44px 20px; text-align: center; cursor: pointer;
+  transition: all .2s; background: #f8f9fc; position: relative;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color: #1a3c6e; background: #eef3ff; }
+.drop-zone .dz-icon  { font-size: 2.4rem; margin-bottom: 10px; color: #a8c8ff; }
+.drop-zone .dz-hint  { font-size: .86rem; color: #666; margin-bottom: 4px; }
+.drop-zone .dz-hint strong { color: #1a3c6e; }
+.drop-zone .dz-ext   { font-size: .74rem; color: #aaa; }
+.drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file-selected {
+  display: none; margin-top: 12px;
+  background: #f0f5ff; border: 1px solid #c8d8f0;
+  border-radius: 3px; padding: 10px 14px; align-items: center; gap: 10px;
+}
+.file-selected.show { display: flex; }
+.file-selected .fname {
+  font-weight: 600; color: #1a3c6e; font-size: .84rem;
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.file-selected .fsize { font-size: .74rem; color: #aaa; }
+.file-selected .remove-btn { background: none; border: none; color: #c0392b; font-size: 1rem; cursor: pointer; padding: 2px 6px; }
+.btn-upload {
+  width: 100%; padding: 11px; margin-top: 14px;
+  background: #1a3c6e; color: #fff; border: none; border-radius: 3px;
+  font-size: .88rem; font-weight: 600; cursor: pointer;
+  transition: background .15s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-upload:hover:not(:disabled) { background: #15305a; }
+.btn-upload:disabled { background: #aaa; cursor: not-allowed; }
+.progress-wrap { display: none; margin-top: 14px; }
+.progress-wrap.show { display: block; }
+.progress-bar-bg { background: #e2e6ed; border-radius: 20px; height: 8px; overflow: hidden; }
+.progress-bar { height: 100%; background: #1a3c6e; border-radius: 20px; width: 0; transition: width .3s ease; }
+.progress-text { font-size: .74rem; color: #888; margin-top: 5px; text-align: center; }
+.result-msg { display: none; margin-top: 14px; padding: 12px 16px; border-radius: 3px; font-size: .84rem; font-weight: 600; }
+.result-msg.ok   { background: #eaf4ee; color: #1a5e2a; border: 1px solid #a5d6a7; }
+.result-msg.err  { background: #fdeded; color: #b71c1c; border: 1px solid #ef9a9a; }
+.result-msg.show { display: block; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #e2e6ed;
+}
+.section-title { font-size: .78rem; font-weight: 700; color: #1a3c6e; letter-spacing: .06em; text-transform: uppercase; }
+.memo-edit-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 16px; padding: 10px 14px;
+  background: #f8f9fc; border: 1px solid #e2e6ed; border-radius: 3px;
+}
+.memo-edit-label { font-size: .72rem; font-weight: 700; color: #666; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+.memo-edit-input {
+  flex: 1; min-width: 200px; padding: 6px 10px;
+  border: 1px solid #cfd5de; border-radius: 3px; font-size: .82rem; color: #222;
+}
+.memo-edit-input:focus { outline: none; border-color: #1a3c6e; }
+.memo-edit-btn {
+  padding: 6px 16px; background: #1a3c6e; color: #fff;
+  border: none; border-radius: 3px; font-size: .78rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background .15s;
+}
+.memo-edit-btn:hover { background: #15305a; }
+.memo-preview { font-size: .74rem; color: #aaa; white-space: nowrap; }
+.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.status-item { background: #f8f9fc; border: 1px solid #e2e6ed; border-radius: 3px; padding: 10px 12px; text-align: center; }
+.status-item .ym  { font-size: .72rem; color: #888; margin-bottom: 4px; }
+.status-item .cnt { font-size: 1.05rem; font-weight: 700; color: #1a3c6e; }
+.status-item .rows{ font-size: .68rem; color: #bbb; margin-top: 2px; }
+.btn-delete {
+  padding: 6px 14px; background: #fff; color: #c0392b;
+  border: 1px solid #c0392b; border-radius: 3px;
+  font-size: .76rem; font-weight: 600; cursor: pointer; transition: all .15s;
+}
+.btn-delete:hover { background: #c0392b; color: #fff; }
+.empty-msg { text-align: center; color: #bbb; padding: 24px; font-size: .84rem; }
+.inline-spin {
+  display: inline-block; width: 13px; height: 13px;
+  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* 전국 카드 강조 */
+.card.national { border-left: 4px solid #3b82f6; }
+.card.national .card-title { color: #1d4ed8; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-org">현대자동차</div>
+    <div class="header-title">충북지역본부 전용 자동차 등록 현황</div>
+  </div>
+  <div class="header-right">
+    <a href="/" class="header-link">대시보드로</a>
+    <a href="/upload/logout" class="header-link"
+       style="border-color:rgba(255,150,150,.5);color:#ffaaaa">로그아웃</a>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ── 충북 데이터 업로드 ── -->
+  <div class="card">
+    <div class="card-title">충북 데이터 업로드</div>
+    <div class="col-guide">
+      <div class="guide-title">통합 데이터 컬럼 구조</div>
+      <div>
+        <code>거점</code><code>지역</code><code>시군구</code>
+        <code>법정동</code><code>등록차급</code><code>수입국가</code>
+        <code>제조사</code><code>등록연료</code><code>대표차명</code>
+        <code>YYYY.MM</code><code>...</code>
+      </div>
+      <div class="guide-note">시군구·거점 데이터를 동시에 적재합니다</div>
+    </div>
+
+    <div class="range-bar">
+      <span class="range-label">업로드 범위</span>
+      <label class="range-radio">
+        <input type="radio" name="upload-range" value="all" checked
+               onchange="toggleYM(false,'ym-selects')"> 전체 기간
+      </label>
+      <label class="range-radio">
+        <input type="radio" name="upload-range" value="single"
+               onchange="toggleYM(true,'ym-selects')"> 특정 월만
+      </label>
+      <div class="ym-selects" id="ym-selects">
+        <select id="sel-up-year"></select>
+        <select id="sel-up-month">
+          <option value="1">1월</option><option value="2">2월</option>
+          <option value="3">3월</option><option value="4">4월</option>
+          <option value="5">5월</option><option value="6">6월</option>
+          <option value="7">7월</option><option value="8">8월</option>
+          <option value="9">9월</option><option value="10">10월</option>
+          <option value="11">11월</option><option value="12">12월</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="drop-zone" id="drop-zone"
+         ondragover="onDragOver(event,'chb')" ondragleave="onDragLeave('chb')" ondrop="onDrop(event,'chb')">
+      <input type="file" id="file-input" accept=".xlsx,.xls" onchange="onFileSelect(event,'chb')">
+      <div class="dz-icon">↑</div>
+      <div class="dz-hint">파일을 여기에 <strong>드래그</strong>하거나 클릭하여 선택</div>
+      <div class="dz-ext">.xlsx / .xls</div>
+    </div>
+    <div class="file-selected" id="chb-file-selected">
+      <span class="fname" id="chb-fname"></span>
+      <span class="fsize" id="chb-fsize"></span>
+      <button class="remove-btn" onclick="removeFile('chb')">✕</button>
+    </div>
+    <button class="btn-upload" id="chb-btn-upload" onclick="doUpload('chb')" disabled>업로드</button>
+    <div class="progress-wrap" id="chb-progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar" id="chb-progress-bar"></div></div>
+      <div class="progress-text" id="chb-progress-text"></div>
+    </div>
+    <div class="result-msg" id="chb-result-msg"></div>
+  </div>
+
+  <!-- ── 전국 데이터 업로드 ── -->
+  <div class="card national">
+    <div class="card-title">전국 데이터 업로드</div>
+    <div class="col-guide">
+      <div class="guide-title">전국 데이터 컬럼 구조</div>
+      <div>
+        <code>등록차급</code><code>수입국가</code><code>제조사</code>
+        <code>등록연료</code><code>대표차명</code>
+        <code>YYYY.MM</code><code>...</code>
+      </div>
+      <div class="guide-note">거점·지역·시군구 컬럼 없음 / 숫자 쉼표(1,054) 자동 처리</div>
+    </div>
+
+    <div class="range-bar">
+      <span class="range-label">업로드 범위</span>
+      <label class="range-radio">
+        <input type="radio" name="nat-upload-range" value="all" checked
+               onchange="toggleYM(false,'nat-ym-selects')"> 전체 기간
+      </label>
+      <label class="range-radio">
+        <input type="radio" name="nat-upload-range" value="single"
+               onchange="toggleYM(true,'nat-ym-selects')"> 특정 월만
+      </label>
+      <div class="ym-selects" id="nat-ym-selects">
+        <select id="sel-nat-year"></select>
+        <select id="sel-nat-month">
+          <option value="1">1월</option><option value="2">2월</option>
+          <option value="3">3월</option><option value="4">4월</option>
+          <option value="5">5월</option><option value="6">6월</option>
+          <option value="7">7월</option><option value="8">8월</option>
+          <option value="9">9월</option><option value="10">10월</option>
+          <option value="11">11월</option><option value="12">12월</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="drop-zone" id="nat-drop-zone"
+         ondragover="onDragOver(event,'nat')" ondragleave="onDragLeave('nat')" ondrop="onDrop(event,'nat')">
+      <input type="file" id="nat-file-input" accept=".xlsx,.xls" onchange="onFileSelect(event,'nat')">
+      <div class="dz-icon">↑</div>
+      <div class="dz-hint">파일을 여기에 <strong>드래그</strong>하거나 클릭하여 선택</div>
+      <div class="dz-ext">.xlsx / .xls</div>
+    </div>
+    <div class="file-selected" id="nat-file-selected">
+      <span class="fname" id="nat-fname"></span>
+      <span class="fsize" id="nat-fsize"></span>
+      <button class="remove-btn" onclick="removeFile('nat')">✕</button>
+    </div>
+    <button class="btn-upload" id="nat-btn-upload" onclick="doUpload('nat')" disabled>업로드</button>
+    <div class="progress-wrap" id="nat-progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar" id="nat-progress-bar"></div></div>
+      <div class="progress-text" id="nat-progress-text"></div>
+    </div>
+    <div class="result-msg" id="nat-result-msg"></div>
+  </div>
+
+  <!-- ── 충북 DB 현황 ── -->
+  <div class="card">
+    <div class="section-header">
+      <div class="section-title">DB 현황 — 충북 데이터</div>
+      <button class="btn-delete" onclick="deleteData('chb')">전체 삭제</button>
+    </div>
+    <div class="memo-edit-bar">
+      <span class="memo-edit-label">데이터 기준일</span>
+      <input type="text" class="memo-edit-input" id="memo-input"
+             placeholder="예) 2026년 5월 28일 기준 데이터"
+             onkeydown="if(event.key==='Enter') saveMemo()">
+      <button class="memo-edit-btn" onclick="saveMemo()">저장</button>
+      <span class="memo-preview" id="memo-preview"></span>
+    </div>
+    <div id="chb-status-body"><div class="empty-msg">로딩 중...</div></div>
+  </div>
+
+  <!-- ── 전국 DB 현황 ── -->
+  <div class="card national">
+    <div class="section-header">
+      <div class="section-title">DB 현황 — 전국 데이터</div>
+      <button class="btn-delete" onclick="deleteData('nat')">전체 삭제</button>
+    </div>
+    <div id="nat-status-body"><div class="empty-msg">로딩 중...</div></div>
+  </div>
+
+</div>
+
+<script>
+const files = {chb: null, nat: null};
+const timers = {chb: null, nat: null};
+
+// ── 연월 토글 ────────────────────────────────────────
+function toggleYM(show, elId){
+  sel(elId).classList.toggle('show', show);
+}
+
+// ── 연도 셀렉트 초기화 ───────────────────────────────
+function initYearSelects(){
+  const now = new Date();
+  ['sel-up-year','sel-nat-year'].forEach(id=>{
+    const el=sel(id); el.innerHTML='';
+    for(let y=now.getFullYear();y>=2020;y--)
+      el.appendChild(new Option(`${y}년`,y));
+  });
+  sel('sel-up-month').value  = now.getMonth()+1;
+  sel('sel-nat-month').value = now.getMonth()+1;
+}
+
+// ── 드래그 앤 드롭 ───────────────────────────────────
+function onDragOver(e,p){ e.preventDefault(); sel(`${p==='chb'?'':p+'-'}drop-zone`).classList.add('dragover'); }
+function onDragLeave(p) { sel(`${p==='chb'?'':p+'-'}drop-zone`).classList.remove('dragover'); }
+function onDrop(e,p){
+  e.preventDefault();
+  sel(`${p==='chb'?'':p+'-'}drop-zone`).classList.remove('dragover');
+  const file=e.dataTransfer.files[0]; if(file) setFile(file,p);
+}
+function onFileSelect(e,p){ const file=e.target.files[0]; if(file) setFile(file,p); }
+
+function setFile(file,p){
+  if(!file.name.match(/\.(xlsx|xls)$/i)){ showResult(false,'엑셀 파일만 가능합니다.',p); return; }
+  files[p]=file;
+  sel(`${p}-fname`).textContent=file.name;
+  sel(`${p}-fsize`).textContent=formatSize(file.size);
+  sel(`${p}-file-selected`).classList.add('show');
+  sel(`${p}-btn-upload`).disabled=false;
+  hideResult(p);
+}
+function removeFile(p){
+  files[p]=null;
+  sel(p==='chb'?'file-input':'nat-file-input').value='';
+  sel(`${p}-file-selected`).classList.remove('show');
+  sel(`${p}-btn-upload`).disabled=true;
+  hideResult(p); resetProgress(p);
+}
+function formatSize(bytes){
+  if(bytes<1024) return bytes+' B';
+  if(bytes<1048576) return (bytes/1024).toFixed(1)+' KB';
+  return (bytes/1048576).toFixed(1)+' MB';
+}
+
+// ── 업로드 ───────────────────────────────────────────
+async function doUpload(p){
+  const file=files[p]; if(!file) return;
+  const isNat=p==='nat';
+  const rangeKey=isNat?'nat-upload-range':'upload-range';
+  const isSingle=document.querySelector(`input[name="${rangeKey}"]:checked`)?.value==='single';
+
+  const btn=sel(`${p}-btn-upload`);
+  btn.disabled=true; btn.innerHTML=`<span class="inline-spin"></span> 업로드 중...`;
+  showProgress(p); hideResult(p);
+  const estSec=Math.max(3,Math.min(60,file.size/300000));
+  startFakeProgress(estSec,p);
+
+  const fd=new FormData();
+  fd.append('file',file);
+  fd.append('type',isNat?'national':'unified');
+
+  if(isSingle){
+    fd.append('year',  sel(isNat?'sel-nat-year' :'sel-up-year').value);
+    fd.append('month', sel(isNat?'sel-nat-month':'sel-up-month').value);
+  }
+
+  try{
+    const res =await fetch('/api/upload',{method:'POST',body:fd});
+    const data=await res.json();
+    stopFakeProgress(p); setProgress(100,'완료',p);
+    if(data.ok){
+      showResult(true,data.msg,p);
+      removeFile(p);
+      loadStatus(p);
+    } else { showResult(false,data.msg,p); }
+  }catch(e){
+    stopFakeProgress(p);
+    showResult(false,'네트워크 오류: '+e.message,p);
+  }finally{
+    btn.disabled=false; btn.innerHTML='업로드';
+  }
+}
+
+// ── 진행바 ───────────────────────────────────────────
+function showProgress(p) { sel(`${p}-progress-wrap`).classList.add('show'); setProgress(0,'업로드 준비 중...',p); }
+function resetProgress(p){ sel(`${p}-progress-wrap`).classList.remove('show'); setProgress(0,'',p); }
+function setProgress(pct,text,p){
+  sel(`${p}-progress-bar`).style.width=pct+'%';
+  sel(`${p}-progress-text`).textContent=text;
+}
+function startFakeProgress(totalSec,p){
+  let pct=0; const step=90/(totalSec*10);
+  timers[p]=setInterval(()=>{
+    pct=Math.min(pct+step,90);
+    setProgress(pct,`처리 중... ${Math.floor(pct)}%`,p);
+  },100);
+}
+function stopFakeProgress(p){ if(timers[p]){clearInterval(timers[p]);timers[p]=null;} }
+
+// ── 결과 메시지 ──────────────────────────────────────
+function showResult(ok,msg,p){
+  const el=sel(`${p}-result-msg`);
+  el.textContent=msg; el.className=`result-msg ${ok?'ok':'err'} show`;
+}
+function hideResult(p){ sel(`${p}-result-msg`).className='result-msg'; }
+
+// ── 메모 ─────────────────────────────────────────────
+async function saveMemo(){
+  const memo=sel('memo-input').value.trim();
+  if(!memo){alert('내용을 입력하세요.');return;}
+  try{
+    await Promise.all([
+      fetch('/api/memo?mode=sigungu',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({memo})}),
+      fetch('/api/memo?mode=base',   {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({memo})}),
+    ]);
+    sel('memo-preview').textContent=`저장됨: ${new Date().toLocaleString('ko-KR')}`;
+  }catch(e){alert('저장 실패: '+e.message);}
+}
+async function loadMemo(){
+  try{
+    const d=await apiFetch('/api/memo?mode=sigungu');
+    if(d.ok){
+      sel('memo-input').value        =d.memo;
+      sel('memo-preview').textContent=`저장됨: ${d.saved_at}`;
+    }
+  }catch(e){}
+}
+
+// ── 삭제 ─────────────────────────────────────────────
+async function deleteData(p){
+  const lbl=p==='nat'?'전국':'충북';
+  if(!confirm(`${lbl} 데이터를 전체 삭제하시겠습니까?`)) return;
+  try{
+    const url=p==='nat'?'/api/delete_national':'/api/delete_all';
+    const res =await fetch(url,{method:'POST'});
+    const data=await res.json();
+    alert(data.msg);
+    loadStatus(p);
+  }catch(e){alert('삭제 중 오류: '+e.message);}
+}
+
+// ── DB 현황 ──────────────────────────────────────────
+async function loadStatus(p){
+  const bodyId=`${p}-status-body`;
+  const mode  =p==='nat'?'national':'sigungu';
+  try{
+    const rows=await apiFetch(`/api/db_status?mode=${mode}`);
+    if(!rows.length){
+      sel(bodyId).innerHTML=`<div class="empty-msg">적재된 데이터가 없습니다.</div>`;
+      return;
+    }
+    sel(bodyId).innerHTML=
+      `<div class="status-grid">`+
+      rows.map(r=>`
+        <div class="status-item">
+          <div class="ym">${r.year}년 ${r.month}월</div>
+          <div class="cnt">${Number(r.total).toLocaleString()}대</div>
+          <div class="rows">${Number(r.rows).toLocaleString()}행</div>
+        </div>`).join('')+
+      `</div>`;
+  }catch(e){
+    sel(bodyId).innerHTML=`<div class="empty-msg" style="color:#c0392b">로드 실패: ${e.message}</div>`;
+  }
+}
+
+// ── 초기화 ───────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',async()=>{
+  initYearSelects();
+  await Promise.all([loadStatus('chb'),loadStatus('nat'),loadMemo()]);
+});
+
+function sel(id){return document.getElementById(id);}
+async function apiFetch(url){
+  const res=await fetch(url);
+  if(!res.ok) throw new Error(`API 오류 (${res.status})`);
+  return res.json();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>충북 등록현황 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Malgun Gothic', sans-serif;
+           background: #f0f2f5; color: #333; }
+
+    /* 네비 */
+    nav { background: #1F3864; color: #fff;
+          padding: 12px 24px; display: flex;
+          align-items: center; gap: 24px; }
+    nav h1 { font-size: 1.1rem; }
+    nav a  { color: #cdd; text-decoration: none; font-size: .9rem; }
+    nav a:hover { color: #fff; }
+
+    /* 레이아웃 */
+    .layout { display: flex; min-height: calc(100vh - 48px); }
+    .sidebar { width: 240px; background: #fff; padding: 16px;
+               border-right: 1px solid #ddd; flex-shrink: 0; }
+    .main    { flex: 1; padding: 20px; overflow-y: auto; }
+
+    /* 필터 */
+    .filter-group { margin-bottom: 18px; }
+    .filter-group label.title {
+        display: block; font-size: .75rem; font-weight: 700;
+        color: #1F3864; margin-bottom: 6px;
+        text-transform: uppercase; letter-spacing: .05em; }
+    .filter-group label {
+        display: flex; align-items: center; gap: 6px;
+        font-size: .85rem; cursor: pointer; padding: 2px 0; }
+    select, input[type=number] {
+        width: 100%; padding: 6px 8px; border: 1px solid #ccc;
+        border-radius: 4px; font-size: .85rem; }
+
+    /* 버튼 */
+    .btn { display: inline-block; padding: 8px 16px;
+           border: none; border-radius: 4px; cursor: pointer;
+           font-size: .85rem; font-weight: 600; }
+    .btn-primary { background: #1F3864; color: #fff; width: 100%; }
+    .btn-primary:hover { background: #2E4F8A; }
+    .btn-sm { padding: 4px 10px; font-size: .8rem; }
+    .btn-green  { background: #2E7D32; color: #fff; }
+    .btn-outline{ background: #fff; border: 1px solid #1F3864;
+                  color: #1F3864; }
+
+    /* 카드 */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+             gap: 12px; margin-bottom: 20px; }
+    .card  { background: #fff; border-radius: 8px; padding: 16px;
+             box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .card .label { font-size: .75rem; color: #888; margin-bottom: 4px; }
+    .card .value { font-size: 1.5rem; font-weight: 700; color: #1F3864; }
+    .card .diff  { font-size: .8rem; margin-top: 4px; }
+    .card .diff.up   { color: #2E7D32; }
+    .card .diff.down { color: #C62828; }
+
+    /* 차트 영역 */
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr;
+                 gap: 16px; margin-bottom: 20px; }
+    .chart-box { background: #fff; border-radius: 8px; padding: 16px;
+                 box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .chart-box h3 { font-size: .9rem; color: #1F3864; margin-bottom: 12px; }
+
+    /* 테이블 */
+    .table-box { background: #fff; border-radius: 8px; padding: 16px;
+                 box-shadow: 0 1px 4px rgba(0,0,0,.08); overflow-x: auto; }
+    .table-box h3 { font-size: .9rem; color: #1F3864; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    th { background: #1F3864; color: #fff; padding: 8px 10px;
+         text-align: center; white-space: nowrap; }
+    td { padding: 7px 10px; border-bottom: 1px solid #eee;
+         text-align: right; white-space: nowrap; }
+    td:first-child { text-align: left; }
+    tr:hover td { background: #f5f8ff; }
+    tr.total td  { background: #FFF9C4; font-weight: 700; }
+    .up   { color: #2E7D32; font-weight: 600; }
+    .down { color: #C62828; font-weight: 600; }
+
+    /* 플래시 */
+    .flash { padding: 10px 16px; border-radius: 6px;
+             margin-bottom: 16px; font-size: .88rem; }
+    .flash.success { background: #E8F5E9; color: #1B5E20; }
+    .flash.error   { background: #FFEBEE; color: #B71C1C; }
+
+    /* 업로드 */
+    .upload-form { background: #fff; border-radius: 8px;
+                   padding: 24px; max-width: 480px;
+                   box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .upload-form h2 { font-size: 1rem; margin-bottom: 16px; color: #1F3864; }
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; font-size: .82rem;
+                      color: #555; margin-bottom: 4px; }
+    .status-table th { background: #2E4F8A; }
+
+    @media (max-width: 768px) {
+      .chart-row { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <h1>🚗 충북 등록현황</h1>
+  <a href="/">대시보드</a>
+  <a href="/upload">데이터 관리</a>
+</nav>
+{% block body %}{% endblock %}
+</body>
+</html>

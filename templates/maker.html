@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>충북지역본부 — 제조사 분석</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Malgun Gothic', sans-serif;
+  background: #f4f6f9; color: #333; font-size: 13px; line-height: 1.5;
+}
+
+/* ── 헤더 ── */
+header {
+  background: #1e293b; padding: 0 32px;
+  display: flex; align-items: stretch; justify-content: space-between; height: 56px;
+}
+.header-left { display: flex; flex-direction: column; justify-content: center; }
+.header-org  { font-size: .7rem; color: #94a3b8; letter-spacing: .05em; margin-bottom: 2px; }
+.header-title{ font-size: 1rem; color: #f8fafc; font-weight: 600; }
+.header-right{ display: flex; align-items: center; gap: 8px; }
+.header-link {
+  color: #cbd5e1; font-size: .78rem; text-decoration: none;
+  padding: 6px 14px; border: 1px solid #475569; border-radius: 4px; transition: all .2s;
+}
+.header-link:hover { background: #334155; color: #fff; }
+.header-link.active { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+
+.main { max-width: 1600px; margin: 0 auto; padding: 20px 24px; }
+
+/* ── 카드 ── */
+.card {
+  background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 8px; padding: 16px 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.card-title {
+  font-size: .85rem; font-weight: 700; color: #1e293b;
+  margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;
+}
+
+/* ── 필터 ── */
+.filter-panel { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-group label { font-size: .72rem; color: #64748b; font-weight: 600; }
+.filter-group select {
+  padding: 8px 28px 8px 12px; border: 1px solid #cbd5e1; border-radius: 4px;
+  font-size: .82rem; background: #fff; min-width: 120px; color: #334155;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+.filter-group select:focus { outline: none; border-color: #3b82f6; }
+.filter-group select.highlight { border-color: #3b82f6; background-color: #eff6ff; font-weight: 700; }
+
+.accum-btn {
+  padding: 8px 16px; background: #fff; color: #334155;
+  border: 1px solid #cbd5e1; border-radius: 4px;
+  font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .15s;
+}
+.accum-btn.active { background: #dc2626; color: #fff; border-color: #dc2626; }
+
+.fuel-group { display: flex; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; }
+.fuel-btn {
+  padding: 8px 12px; background: #fff; color: #64748b;
+  border: none; border-right: 1px solid #e2e8f0;
+  font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .15s;
+}
+.fuel-btn:last-child { border-right: none; }
+.fuel-btn:hover  { background: #f8fafc; color: #0f172a; }
+.fuel-btn.active { background: #334155; color: #fff; }
+
+button { cursor: pointer; border: none; border-radius: 4px; }
+.btn-primary { background: #2563a8; color: #fff; padding: 9px 20px; font-size: .82rem; font-weight: 600; }
+.btn-primary:hover { background: #1e40af; }
+
+/* ── 요약 카드 ── */
+.summary-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 16px;
+}
+.s-card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 16px 20px; border-top: 4px solid #94a3b8;
+}
+.s-card.blue   { border-top-color: #3b82f6; }
+.s-card.green  { border-top-color: #10b981; }
+.s-card.orange { border-top-color: #f59e0b; }
+.s-card.red    { border-top-color: #ef4444; }
+.s-card .label { font-size: .75rem; color: #64748b; margin-bottom: 6px; font-weight: 700; }
+.s-card .value { font-size: 1.5rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+.s-card .sub   { font-size: .73rem; color: #94a3b8; margin-top: 5px; }
+.s-card .badge-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.badge {
+  font-size: .72rem; font-weight: 600; padding: 2px 7px;
+  border-radius: 3px; white-space: nowrap;
+}
+.badge.up   { background: #fef2f2; color: #dc2626; }
+.badge.down { background: #eff6ff; color: #2563eb; }
+.badge.flat { background: #f8fafc; color: #94a3b8; }
+
+/* ── 2열 ── */
+.two-col { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 16px; }
+
+/* ── 테이블 공통 ── */
+.tbl-wrap { overflow-x: auto; }
+.data-tbl { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.data-tbl th {
+  background: #f8fafc; color: #475569; padding: 8px 12px; text-align: center;
+  white-space: nowrap; border-bottom: 2px solid #e2e8f0; font-size: .75rem; font-weight: 600;
+}
+.data-tbl td {
+  padding: 8px 12px; border-bottom: 1px solid #f1f5f9;
+  text-align: right; white-space: nowrap; color: #334155;
+}
+.data-tbl td.td-name { text-align: left; font-weight: 600; color: #0f172a; }
+.data-tbl td.td-rank { text-align: center; font-weight: 700; color: #94a3b8; width: 32px; }
+.data-tbl tr:hover td { background: #f8fafc; }
+.data-tbl tr.tr-total td { background: #f1f5f9; font-weight: 700; border-top: 2px solid #e2e8f0; }
+
+/* 행 색상 (충북평균 대비) */
+.data-tbl tr.row-high td { background: #fef2f2; }
+.data-tbl tr.row-low  td { background: #eff6ff; }
+
+/* ── 연료 구성 바 ── */
+.fuel-bars { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.fuel-item { display: flex; align-items: center; gap: 10px; }
+.fuel-label { font-size: .78rem; font-weight: 600; color: #475569; width: 50px; text-align: right; flex-shrink: 0; }
+.fuel-bar-bg { flex: 1; background: #f1f5f9; border-radius: 4px; height: 20px; overflow: hidden; }
+.fuel-bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+.fuel-bar-fill.ice  { background: #64748b; }
+.fuel-bar-fill.hev  { background: #f59e0b; }
+.fuel-bar-fill.ev   { background: #10b981; }
+.fuel-bar-fill.fcev { background: #3b82f6; }
+.fuel-pct { font-size: .78rem; font-weight: 700; color: #334155; width: 42px; flex-shrink: 0; }
+.fuel-cnt { font-size: .72rem; color: #94a3b8; width: 60px; flex-shrink: 0; }
+
+/* ── 빈 상태 ── */
+.empty-state {
+  text-align: center; padding: 48px 20px; color: #94a3b8;
+}
+.empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: .4; }
+.empty-state .empty-msg  { font-size: .9rem; font-weight: 600; }
+.empty-state .empty-sub  { font-size: .78rem; margin-top: 6px; }
+
+.up   { color: #dc2626; font-weight: 600; }
+.down { color: #2563a8; font-weight: 600; }
+.text-muted { color: #cbd5e1; }
+
+#loading { position: fixed; inset: 0; background: rgba(255,255,255,0.7); display: none; align-items: center; justify-content: center; z-index: 999; }
+.spinner { width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 시군구 클릭 하이라이트 ── */
+.data-tbl tr.selected td { background: #dbeafe !important; }
+.data-tbl tr.tr-class { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-org">현대자동차</div>
+    <div class="header-title">충북지역본부 전용 자동차 등록 현황</div>
+  </div>
+  <div class="header-right">
+    <a href="/"      class="header-link">대시보드</a>
+    <a href="/maker" class="header-link active">제조사 분석</a>
+    <a href="/upload" class="header-link">데이터 업로드</a>
+  </div>
+</header>
+
+<div id="loading"><div class="spinner"></div></div>
+
+<div class="main">
+
+  <!-- 필터 -->
+  <div class="card">
+    <div class="card-title">조회 조건</div>
+    <div class="filter-panel">
+      <div class="filter-group"><label>연도</label><select id="s_year"></select></div>
+      <div class="filter-group"><label>월</label><select id="s_month"></select></div>
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button class="accum-btn" id="btn-accum" onclick="toggleAccum()">누계</button>
+      </div>
+      <div class="filter-group">
+        <label>제조사 ★</label>
+        <select id="s_maker" class="highlight"></select>
+      </div>
+      <div class="filter-group"><label>차급</label><select id="s_car_class"></select></div>
+      <div class="filter-group">
+        <label>연료</label>
+        <div class="fuel-group">
+          <button class="fuel-btn active" data-val=""     onclick="selectFuel(this)">전체</button>
+          <button class="fuel-btn"        data-val="ice"  onclick="selectFuel(this)">ICE</button>
+          <button class="fuel-btn"        data-val="hev"  onclick="selectFuel(this)">HEV</button>
+          <button class="fuel-btn"        data-val="ev"   onclick="selectFuel(this)">EV</button>
+          <button class="fuel-btn"        data-val="fcev" onclick="selectFuel(this)">FCEV</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <button class="btn-primary" onclick="doSearch()">조회</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 요약 카드 -->
+  <div class="summary-grid" id="summary-grid" style="display:none">
+    <div class="s-card blue">
+      <div class="label">충북 총 등록 (해당 제조사)</div>
+      <div class="value" id="c-total">-</div>
+      <div class="sub"   id="c-total-sub"></div>
+      <div class="badge-row" id="c-total-badge"></div>
+    </div>
+    <div class="s-card green">
+      <div class="label">충북 M/S</div>
+      <div class="value" id="c-ms">-</div>
+      <div class="sub"   id="c-ms-sub"></div>
+      <div class="badge-row" id="c-ms-badge"></div>
+    </div>
+    <div class="s-card orange">
+      <div class="label">M/S 최고 지역</div>
+      <div class="value" id="c-best-loc">-</div>
+      <div class="sub"   id="c-best-ms"></div>
+    </div>
+    <div class="s-card red">
+      <div class="label">M/S 최저 지역</div>
+      <div class="value" id="c-worst-loc">-</div>
+      <div class="sub"   id="c-worst-ms"></div>
+    </div>
+  </div>
+
+  <!-- 빈 상태 -->
+  <div class="card" id="empty-state">
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <div class="empty-msg">제조사를 선택하고 조회하세요</div>
+      <div class="empty-sub">시군구별 M/S 현황과 차종별 데이터를 확인할 수 있습니다</div>
+    </div>
+  </div>
+
+  <!-- 시군구별 + 차종별 -->
+  <div class="two-col" id="main-content" style="display:none">
+
+    <!-- 시군구별 현황 -->
+    <div class="card">
+      <div class="card-title" id="loc-title">시군구별 현황</div>
+      <div class="tbl-wrap">
+        <table class="data-tbl">
+          <thead>
+            <tr>
+              <th rowspan="2">#</th>
+              <th rowspan="2" style="text-align:left">시군구</th>
+              <th colspan="2">등록</th>
+              <th rowspan="2">M/S</th>
+              <th rowspan="2">YoY<br>(%p)</th>
+              <th rowspan="2">MoM<br>(%p)</th>
+              <th rowspan="2">충북<br>평균 대비</th>
+            </tr>
+            <tr>
+              <th>산업</th><th>당사</th>
+            </tr>
+          </thead>
+          <tbody id="loc-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 우측: 차종별 + 연료별 -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- 차종별 현황 -->
+      <div class="card">
+        <div class="card-title" id="model-title">차종별 현황</div>
+        <div class="tbl-wrap">
+          <table class="data-tbl">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th style="text-align:left">차종</th>
+                <th>등록</th>
+                <th>비중</th>
+                <th>YoY</th>
+                <th>MoM</th>
+              </tr>
+            </thead>
+            <tbody id="model-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 연료별 구성 -->
+      <div class="card">
+        <div class="card-title" id="fuel-title">연료별 구성</div>
+        <div class="fuel-bars" id="fuel-bars"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+let options  = {};
+let isAccum  = false;
+let analysis = null;
+let selectedLoc = null;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadOptions();
+});
+
+// ── 옵션 로드 ────────────────────────────────────────
+async function loadOptions() {
+  options = await apiFetch('/api/options?mode=sigungu');
+  fillSelect('s_year',     options.years,      false);
+  fillSelect('s_month',    options.months,     false);
+  if (options.ym_list && options.ym_list.length) {
+    const last = options.ym_list[options.ym_list.length - 1];
+    sel('s_year').value  = last.year;
+    sel('s_month').value = last.month;
+  }
+  fillSelect('s_maker',     options.makers,      false);
+  fillSelect('s_car_class', options.car_classes, true);
+}
+
+function fillSelect(id, items, withAll) {
+  const el = sel(id); el.innerHTML = '';
+  if (withAll) el.appendChild(new Option('전체','전체'));
+  (items||[]).forEach(v => el.appendChild(new Option(v,v)));
+}
+
+// ── 누계 토글 ────────────────────────────────────────
+function toggleAccum() {
+  isAccum = !isAccum;
+  sel('btn-accum').classList.toggle('active', isAccum);
+}
+
+function getFuelGroup() {
+  const active = document.querySelector('.fuel-btn.active');
+  return active ? active.dataset.val : '';
+}
+function selectFuel(btn) {
+  document.querySelectorAll('.fuel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── 메인 조회 ────────────────────────────────────────
+async function doSearch() {
+  const maker = sel('s_maker').value;
+  const year  = sel('s_year').value;
+  const month = sel('s_month').value;
+
+  if (!maker) { alert('제조사를 선택하세요.'); return; }
+
+  showLoading(true);
+  selectedLoc = null;
+
+  try {
+    const p = new URLSearchParams({
+      mode      : 'sigungu',
+      maker, year, month,
+      accum     : isAccum ? '1' : '',
+      fuel_group: getFuelGroup(),
+      car_class : sel('s_car_class').value,
+    });
+
+    analysis = await apiFetch(`/api/maker_analysis?${p}`);
+
+    if (!analysis.ok) {
+      alert(analysis.msg); return;
+    }
+
+    renderSummary(analysis, year, month);
+    renderLocTable(analysis);
+    await loadModelAndFuel(maker, year, month, '전체');
+
+    sel('empty-state').style.display   = 'none';
+    sel('summary-grid').style.display  = 'grid';
+    sel('main-content').style.display  = 'grid';
+
+  } finally { showLoading(false); }
+}
+
+// ── 요약 카드 ─────────────────────────────────────────
+function renderSummary(d, year, month) {
+  const periodLabel = isAccum ? `${year}년 1~${month}월` : `${year}년 ${month}월`;
+
+  setText('c-total',     fmt(d.chb_maker));
+  setText('c-total-sub', `산업 전체 ${fmt(d.chb_total)}대  |  ${periodLabel}`);
+  setMsBadge('c-total-badge', d.chb_maker,
+    d.chb_total * d.chb_ms_py / 100,
+    d.chb_total * d.chb_ms_pm / 100);
+
+  setText('c-ms',     d.chb_ms + '%');
+  setText('c-ms-sub', `전년 ${d.chb_ms_py}%  |  전월 ${d.chb_ms_pm}%`);
+  sel('c-ms-badge').innerHTML =
+    mkBadge(d.yoy_p, '전년') + mkBadge(d.mom_p, '전월') ;
+
+  const sorted = [...d.rows].filter(r => r.maker > 0);
+  const best   = sorted.sort((a,b) => b.ms - a.ms)[0];
+  const worst  = sorted.sort((a,b) => a.ms - b.ms)[0];
+
+  if (best) {
+    setText('c-best-loc', best.loc);
+    setText('c-best-ms',  `M/S ${best.ms}%  (${fmt(best.maker)}대)`);
+  }
+  if (worst) {
+    setText('c-worst-loc', worst.loc);
+    setText('c-worst-ms',  `M/S ${worst.ms}%  (${fmt(worst.maker)}대)`);
+  }
+
+  const periodLbl = isAccum ? `${year}년 1~${month}월` : `${year}년 ${month}월`;
+  setText('loc-title',   `시군구별 현황  —  ${sel('s_maker').value}  ${periodLbl}`);
+  setText('model-title', `차종별 현황  —  ${sel('s_maker').value}`);
+  setText('fuel-title',  `연료별 구성  —  ${sel('s_maker').value}`);
+}
+
+function mkBadge(diff, label) {
+  if (diff === null || diff === undefined) return '';
+  const cls  = diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat');
+  const sign = diff > 0 ? '▲' : (diff < 0 ? '▼' : '');
+  return `<span class="badge ${cls}">${label} ${sign}${Math.abs(diff)}%p</span>`;
+}
+
+function setMsBadge(id, curr, prevYr, prevMon) {
+  const el = sel(id); if (!el) return;
+  const gC  = analysis.chb_total || 1;
+  const msC = curr/gC*100;
+  const msPY= prevYr ? prevYr/gC*100 : 0;
+  const msPM= prevMon ? prevMon/gC*100 : 0;
+  el.innerHTML =
+    mkBadge(+(msC-msPY).toFixed(1), '전년') +
+    mkBadge(+(msC-msPM).toFixed(1), '전월');
+}
+
+// ── 시군구별 테이블 ───────────────────────────────────
+function renderLocTable(d) {
+  const chb_ms = d.chb_ms;
+  const rows   = d.rows;
+
+  if (!rows.length) {
+    sel('loc-body').innerHTML =
+      `<tr><td colspan="8" style="text-align:center;color:#aaa;padding:24px">데이터가 없습니다.</td></tr>`;
+    return;
+  }
+
+  sel('loc-body').innerHTML = rows.map((r, i) => {
+    const vsCls = r.vs_chb > 0 ? 'up' : (r.vs_chb < 0 ? 'down' : '');
+    const sign  = r.vs_chb > 0 ? '+' : '';
+    const rowCls = r.vs_chb >= 3 ? 'tr-class row-high' : r.vs_chb <= -3 ? 'tr-class row-low' : 'tr-class';
+
+    return `<tr class="${rowCls}" onclick="onLocClick('${r.loc}', this)">
+      <td class="td-rank">${i+1}</td>
+      <td class="td-name">${r.loc}</td>
+      <td>${fmt(r.total)}</td>
+      <td><strong>${fmt(r.maker)}</strong></td>
+      <td><strong>${r.ms}%</strong></td>
+      <td>${ptCell(r.yoy_p)}</td>
+      <td>${ptCell(r.mom_p)}</td>
+      <td class="${vsCls}">${sign}${r.vs_chb}%p</td>
+    </tr>`;
+  }).join('') + `
+    <tr class="tr-total">
+      <td colspan="2" class="td-name">충북 전체</td>
+      <td>${fmt(d.chb_total)}</td>
+      <td><strong>${fmt(d.chb_maker)}</strong></td>
+      <td><strong>${d.chb_ms}%</strong></td>
+      <td>${ptCell(d.yoy_p)}</td>
+      <td>${ptCell(d.mom_p)}</td>
+      <td><span class="text-muted">기준</span></td>
+    </tr>`;
+}
+
+function ptCell(v) {
+  if (v === null || v === undefined) return `<span class="text-muted">-</span>`;
+  const cls  = v > 0 ? 'up' : (v < 0 ? 'down' : '');
+  const sign = v > 0 ? '▲ ' : (v < 0 ? '▼ ' : '');
+  return `<span class="${cls}">${sign}${Math.abs(v)}%p</span>`;
+}
+
+// ── 시군구 클릭 → 차종/연료 필터 ─────────────────────
+async function onLocClick(loc, tr) {
+  // 이미 선택된 행 클릭 시 해제
+  if (selectedLoc === loc) {
+    selectedLoc = null;
+    document.querySelectorAll('#loc-body tr').forEach(r => r.classList.remove('selected'));
+    await loadModelAndFuel(sel('s_maker').value, sel('s_year').value, sel('s_month').value, '전체');
+    setText('model-title', `차종별 현황  —  ${sel('s_maker').value}  (전체)`);
+    setText('fuel-title',  `연료별 구성  —  ${sel('s_maker').value}  (전체)`);
+    return;
+  }
+
+  selectedLoc = loc;
+  document.querySelectorAll('#loc-body tr').forEach(r => r.classList.remove('selected'));
+  tr.classList.add('selected');
+
+  await loadModelAndFuel(sel('s_maker').value, sel('s_year').value, sel('s_month').value, loc);
+  setText('model-title', `차종별 현황  —  ${sel('s_maker').value}  (${loc})`);
+  setText('fuel-title',  `연료별 구성  —  ${sel('s_maker').value}  (${loc})`);
+}
+
+// ── 차종/연료 로드 ────────────────────────────────────
+async function loadModelAndFuel(maker, year, month, sigungu) {
+  const p = new URLSearchParams({
+    mode: 'sigungu', maker, year, month,
+    accum: isAccum ? '1' : '',
+    fuel_group: getFuelGroup(),
+    car_class: sel('s_car_class').value,
+    sigungu,
+  });
+
+  const [models, fuels] = await Promise.all([
+    apiFetch(`/api/maker_models?${p}`),
+    apiFetch(`/api/maker_fuel?${p}`),
+  ]);
+
+  renderModelTable(models);
+  renderFuelBars(fuels);
+}
+
+// ── 차종별 테이블 ─────────────────────────────────────
+function renderModelTable(rows) {
+  if (!rows.length) {
+    sel('model-body').innerHTML =
+      `<tr><td colspan="6" style="text-align:center;color:#aaa;padding:16px">데이터 없음</td></tr>`;
+    return;
+  }
+  const grand = rows.reduce((s,r) => s+r.total, 0) || 1;
+  sel('model-body').innerHTML = rows.map((r,i) => `
+    <tr>
+      <td class="td-rank">${i+1}</td>
+      <td class="td-name">${r.model}</td>
+      <td>${fmt(r.total)}</td>
+      <td>${r.share}%</td>
+      <td>${rateCell(r.total, r.prev_yr)}</td>
+      <td>${rateCell(r.total, r.prev_mon)}</td>
+    </tr>`).join('');
+}
+
+function rateCell(curr, prev) {
+  if (!prev) return `<span class="text-muted">-</span>`;
+  const diff = curr - prev;
+  const rate = ((diff/prev)*100).toFixed(1);
+  const sign = diff > 0 ? '▲ ' : (diff < 0 ? '▼ ' : '');
+  const cls  = diff > 0 ? 'up' : (diff < 0 ? 'down' : '');
+  return `<span class="${cls}">${sign}${Math.abs(rate)}%</span>`;
+}
+
+// ── 연료별 구성 바 ────────────────────────────────────
+function renderFuelBars(rows) {
+  const colorMap = { ICE:'ice', HEV:'hev', EV:'ev', FCEV:'fcev' };
+  sel('fuel-bars').innerHTML = rows.map(r => `
+    <div class="fuel-item">
+      <span class="fuel-label">${r.group}</span>
+      <div class="fuel-bar-bg">
+        <div class="fuel-bar-fill ${colorMap[r.group]||''}" style="width:${r.share}%"></div>
+      </div>
+      <span class="fuel-pct">${r.share}%</span>
+      <span class="fuel-cnt">${fmt(r.total)}대</span>
+    </div>`).join('');
+}
+
+// ── 유틸 ─────────────────────────────────────────────
+function sel(id)       { return document.getElementById(id); }
+function setText(id,v) { const e=sel(id); if(e) e.textContent=v; }
+function fmt(n)        { return Number(n||0).toLocaleString(); }
+function showLoading(v){ sel('loading').style.display=v?'flex':'none'; }
+async function apiFetch(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API 오류 (${res.status})`);
+  return res.json();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>업로드 인증</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 고딕',
+               'Segoe UI', sans-serif;
+  background: #f4f6f9; color: #222;
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+
+header {
+  background: #1a3c6e; padding: 0 32px;
+  display: flex; align-items: stretch; justify-content: space-between;
+  height: 56px;
+}
+.header-left { display: flex; flex-direction: column; justify-content: center; }
+.header-org  { font-size: .72rem; color: #a8c8ff; letter-spacing: .08em; margin-bottom: 2px; }
+.header-title{ font-size: 1rem; color: #fff; font-weight: 600; }
+.header-right{ display: flex; align-items: center; }
+.header-link {
+  color: #a8c8ff; font-size: .78rem; text-decoration: none;
+  padding: 6px 14px; border: 1px solid rgba(168,200,255,.4);
+  border-radius: 3px; transition: all .2s;
+}
+.header-link:hover { background: rgba(255,255,255,.1); color: #fff; }
+
+.login-wrap {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+.login-box {
+  background: #fff; border: 1px solid #e2e6ed;
+  border-radius: 4px; padding: 40px 36px;
+  width: 100%; max-width: 380px;
+}
+.login-title {
+  font-size: .78rem; font-weight: 700; color: #1a3c6e;
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px;
+}
+.login-desc { font-size: .78rem; color: #999; margin-bottom: 28px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block; font-size: .72rem; font-weight: 700;
+  color: #666; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 6px;
+}
+.form-group input {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid #cfd5de; border-radius: 3px;
+  font-size: .88rem; color: #222;
+}
+.form-group input:focus { outline: none; border-color: #1a3c6e; }
+
+.error-msg {
+  background: #fdeded; border: 1px solid #ef9a9a;
+  border-radius: 3px; padding: 9px 12px;
+  font-size: .78rem; color: #b71c1c; margin-bottom: 16px;
+}
+
+.btn-login {
+  width: 100%; padding: 10px;
+  background: #1a3c6e; color: #fff; border: none; border-radius: 3px;
+  font-size: .88rem; font-weight: 600; cursor: pointer;
+  transition: background .15s; letter-spacing: .02em;
+}
+.btn-login:hover { background: #15305a; }
+
+.back-link {
+  display: block; text-align: center; margin-top: 16px;
+  font-size: .76rem; color: #aaa; text-decoration: none;
+}
+.back-link:hover { color: #1a3c6e; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-org">현대자동차</div>
+    <div class="header-title">충북지역본부 전용 자동차 등록 현황</div>
+  </div>
+  <div class="header-right">
+    <a href="/" class="header-link">대시보드로</a>
+  </div>
+</header>
+
+<div class="login-wrap">
+  <div class="login-box">
+    <div class="login-title">데이터 업로드</div>
+    <div class="login-desc">접근 권한이 필요한 페이지입니다.</div>
+
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/upload/login">
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input type="password" name="password"
+               placeholder="비밀번호를 입력하세요"
+               autofocus autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-login">확인</button>
+    </form>
+
+    <a href="/" class="back-link">대시보드로 돌아가기</a>
+  </div>
+</div>
+
+</body>
+</html>
