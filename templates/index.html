@@ -280,7 +280,7 @@ button { cursor: pointer; border: none; border-radius: 4px; }
 <body>
 
 <header>
-  <div class="header-left">
+  <div class="header-left" id="header-logo" onclick="logoClick()" style="cursor:pointer">
     <div class="header-org">현대자동차</div>
     <div class="header-title">충북지역본부 전용 자동차 등록 현황</div>
   </div>
@@ -545,6 +545,17 @@ button { cursor: pointer; border: none; border-radius: 4px; }
 </div>
 
 <script>
+let logoClickCount = 0;
+let logoClickTimer = null;
+function logoClick() {
+  logoClickCount++;
+  clearTimeout(logoClickTimer);
+  logoClickTimer = setTimeout(() => { logoClickCount = 0; }, 3000);
+  if (logoClickCount >= 5) {
+    logoClickCount = 0;
+    window.location.href = '/upload';
+  }
+}
 // ── 전역 상태 ─────────────────────────────────────────
 let options          = {};
 let msData           = null;
@@ -1558,10 +1569,11 @@ async function refreshMsReport(){
   sel('ms-table-wrap').className=`ms-tbl-wrap view-mode-${currentViewMode}`;
   try{
     const p=new URLSearchParams({mode:currentMode,year,month,loc});
-    const hq=getHq(),baseSg=getBaseSg(),baseDong=getBaseDong();
+    const hq=getHq(),baseSg=getBaseSg(),baseDong=getBaseDong(),dong=getDong();
     if(hq)      p.set('headquarters', hq);
     if(baseSg)  p.set('base_sigungu', baseSg);
     if(baseDong)p.set('base_dong',    baseDong);
+    if(dong)    p.set('dong',         dong);
     msData=await apiFetch(`/api/ms_report?${p}`);
     renderMsTable();
     sel('btn-excel').disabled=false;
@@ -1576,10 +1588,11 @@ function downloadMS(){
   const btn=sel('btn-excel');
   btn.disabled=true; btn.textContent='생성 중...';
   const p=new URLSearchParams({year,month,mode:currentMode,loc});
-  const hq=getHq(),baseSg=getBaseSg(),baseDong=getBaseDong();
+  const hq=getHq(),baseSg=getBaseSg(),baseDong=getBaseDong(),dong=getDong();
   if(hq)      p.set('headquarters', hq);
   if(baseSg)  p.set('base_sigungu', baseSg);
   if(baseDong)p.set('base_dong',    baseDong);
+  if(dong)    p.set('dong',         dong);
   const iframe=document.createElement('iframe');
   iframe.style.display='none';
   iframe.src=`/api/ms_report/download?${p}`;

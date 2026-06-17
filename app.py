@@ -140,6 +140,11 @@ def get_tbl_for_mode(mode, args):
         base_dong = args.get('base_dong',    '').strip()
         if (base_sg and base_sg != '전체') or (base_dong and base_dong != '전체'):
             return 'car_reg'
+    if mode == 'sigungu':
+        # agg_sigungu에는 dong 컬럼이 없으므로, 읍면동 필터 시 원본 테이블 사용
+        dong = args.get('dong', '').strip()
+        if dong and dong != '전체':
+            return 'car_reg'
     return get_agg_table(mode, accum)
 
 def fuel_group_clause(fuel_group):
@@ -692,10 +697,17 @@ def build_where_foreign(args, mode='sigungu'):
 # M/S 집계
 # ═══════════════════════════════════════════════════════
 def ms_aggregate(year, month, loc=None, mode='sigungu', accum=False,
-                 base_sg=None, base_dong=None, hq=None):
-    tbl     = get_agg_table(mode, accum)
+                 base_sg=None, base_dong=None, hq=None, dong=None):
+    # 시군구 모드에서 읍면동 선택 시 agg에 dong 컬럼이 없으므로 원본 테이블 사용
+    use_raw = (mode == 'sigungu' and dong and dong != '전체')
+    if use_raw:
+        tbl = 'car_reg'
+        month_cond = 'month<=?' if accum else 'month=?'
+    else:
+        tbl = get_agg_table(mode, accum)
+        month_cond = 'month=?'
     loc_col = 'sigungu' if mode == 'sigungu' else 'base'
-    parts, params = ['year=?','month=?'], [year, month]
+    parts, params = ['year=?', month_cond], [year, month]
 
     if hq and hq != '전체':
         parts.append('headquarters=?'); params.append(hq)
@@ -706,6 +718,8 @@ def ms_aggregate(year, month, loc=None, mode='sigungu', accum=False,
             params.extend(sorted(CHEONGJU_DISTS))
         else:
             parts.append(f'{loc_col}=?'); params.append(loc)
+    if use_raw:
+        parts.append('dong=?'); params.append(dong)
 
     where = 'WHERE ' + ' AND '.join(parts)
     rows  = query_db(
@@ -739,10 +753,12 @@ def ms_aggregate(year, month, loc=None, mode='sigungu', accum=False,
 # 엑셀 빌더
 # ═══════════════════════════════════════════════════════
 def fetch_for_excel(year, month, loc, mode='sigungu', accum=False,
-                    base_sg=None, base_dong=None, hq=None):
-    use_raw = (mode == 'base' and
+                    base_sg=None, base_dong=None, hq=None, dong=None):
+    sg_dong_sel = (mode == 'sigungu' and dong and dong != '전체')
+    use_raw = ((mode == 'base' and
                ((base_sg and base_sg != '전체') or
                 (base_dong and base_dong != '전체')))
+               or sg_dong_sel)
 
     if use_raw:
         tbl = 'car_reg'
@@ -768,6 +784,8 @@ def fetch_for_excel(year, month, loc, mode='sigungu', accum=False,
             parts.append('sigungu=?'); params.append(base_sg)
         if base_dong and base_dong != '전체':
             parts.append('dong=?');    params.append(base_dong)
+        if sg_dong_sel:
+            parts.append('dong=?');    params.append(dong)
 
     where = 'WHERE ' + ' AND '.join(parts)
     rows  = query_db(
@@ -807,7 +825,7 @@ def sum_by_maker(data_dict, orig_classes):
     return result, total, ev_result
 
 
-def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, hq=None):
+def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, hq=None, dong=None):
     prev_m_year  = year if month > 1 else year - 1
     prev_m_month = month - 1 if month > 1 else 12
 
@@ -869,9 +887,9 @@ def build_excel(year, month, loc, mode='sigungu', base_sg=None, base_dong=None, 
         ws = wb.create_sheet(title=sd['name'])
 
         prev_d = fetch_for_excel(sd['prev_y'], sd['prev_m'], loc, mode,
-                                  sd['accum'], base_sg, base_dong, hq)
+                                  sd['accum'], base_sg, base_dong, hq, dong)
         curr_d = fetch_for_excel(year, month, loc, mode,
-                                  sd['accum'], base_sg, base_dong, hq)
+                                  sd['accum'], base_sg, base_dong, hq, dong)
 
         _, gp, _ = sum_by_maker(prev_d, None); gp = gp or 1
         _, gc, _ = sum_by_maker(curr_d, None); gc = gc or 1
@@ -1354,6 +1372,7 @@ def ms_report():
     loc       = request.args.get('loc',         '전체')
     base_sg   = request.args.get('base_sigungu','').strip()
     base_dong = request.args.get('base_dong',   '').strip()
+    dong      = request.args.get('dong',        '').strip()
     hq        = request.args.get('headquarters','').strip()
     if not year or not month:
         return jsonify({'ok':False,'msg':'year, month 필수'}), 400
@@ -1362,7 +1381,8 @@ def ms_report():
     pmm = month-1 if month > 1 else 12
 
     def mk(y,m,acc=False):
-        return ms_aggregate(y,m,loc,mode,acc,base_sg or None,base_dong or None,hq or None)
+        return ms_aggregate(y,m,loc,mode,acc,base_sg or None,base_dong or None,
+                            hq or None,dong or None)
     def at(d): return sum(mg['cnt'] for s in d.values() for c in s.values() for mg in c.values())
     def ae(d): return sum(mg['ev']  for s in d.values() for c in s.values() for mg in c.values())
 
@@ -1395,10 +1415,12 @@ def ms_report_download():
     loc       = request.args.get('loc',         '전체')
     base_sg   = request.args.get('base_sigungu','').strip()
     base_dong = request.args.get('base_dong',   '').strip()
+    dong      = request.args.get('dong',        '').strip()
     hq        = request.args.get('headquarters','').strip()
     if not year or not month:
         return jsonify({'ok':False,'msg':'year, month 필수'}), 400
-    buf      = build_excel(year,month,loc,mode,base_sg or None,base_dong or None,hq or None)
+    buf      = build_excel(year,month,loc,mode,base_sg or None,base_dong or None,
+                           hq or None,dong or None)
     loc_lbl  = loc if loc and loc != '전체' else '전체'
     mode_lbl = '거점' if mode == 'base' else '시군구'
     hq_lbl   = hq if hq else '전체'
